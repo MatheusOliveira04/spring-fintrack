@@ -1,4 +1,4 @@
-package git.matheusoliveira04.api.fintrack.dto;
+package git.matheusoliveira04.api.fintrack.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
