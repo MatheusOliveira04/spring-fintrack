@@ -21,9 +21,11 @@ public class JwtService {
     @Value("${application.security.jwt.secret-key}")
     private String SECRET_KEY;
 
-    private long jwtExpiration = 600000L;
+    @Value("${application.security.jwt.token.expiration}")
+    private long jwtExpiration;
 
-    private long refreshExpiration = 800000L;
+    @Value("${application.security.jwt.refresh-token.expiration}")
+    private long refreshExpiration;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
