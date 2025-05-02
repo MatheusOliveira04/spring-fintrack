@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/v1/user")
+@RequestMapping("/api/v1/user")
 public class UserController {
 
     private RoleRepository roleRepository;
