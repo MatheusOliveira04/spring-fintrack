@@ -3,6 +3,7 @@ package git.matheusoliveira04.api.fintrack.controller;
 import git.matheusoliveira04.api.fintrack.dto.request.UserRequest;
 import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
+import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +30,20 @@ public class UserController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserMapper userMapper;
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     @Transactional
     public ResponseEntity<User> insert(@RequestBody UserRequest userRequest) {
-        Set<Role> role = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
-        User user = userRepository.save(
-                new User(null, userRequest.getName(), userRequest.getUsername(), passwordEncoder.encode(userRequest.getPassword()),
-                        role)
+        Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
+
+        var userMapped = userMapper.toUser(userRequest, roles);
+
+        User user = userRepository.save(userMapped
+                //   new User(null, userRequest.getName(), userRequest.getUsername(), passwordEncoder.encode(userRequest.getPassword()),
+                //         role)
         );
         return ResponseEntity.ok(user);
     }
