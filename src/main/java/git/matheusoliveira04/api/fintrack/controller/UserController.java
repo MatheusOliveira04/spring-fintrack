@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,15 +22,12 @@ import java.util.Set;
 @RequestMapping("/api/v1/user")
 public class UserController {
 
+    @Autowired
     private RoleRepository roleRepository;
+    @Autowired
     private UserRepository userRepository;
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-
-    public UserController(RoleRepository roleRepository, UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping

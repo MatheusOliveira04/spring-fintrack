@@ -2,6 +2,7 @@ package git.matheusoliveira04.api.fintrack.config;
 
 import git.matheusoliveira04.api.fintrack.config.jwts.JwtAuthFilter;
 import git.matheusoliveira04.api.fintrack.config.jwts.JwtUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,13 +28,10 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
+    @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
+    @Autowired
     private JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(JwtUserDetailsService jwtUserDetailsService, JwtAuthFilter jwtAuthFilter) {
-        this.jwtUserDetailsService = jwtUserDetailsService;
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
