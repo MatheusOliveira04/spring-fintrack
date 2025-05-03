@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.config.jwts.JwtUserDetailsService;
 import git.matheusoliveira04.api.fintrack.dto.request.LoginRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.LoginResponse;
 import git.matheusoliveira04.api.fintrack.service.AuthenticationService;
+import git.matheusoliveira04.api.fintrack.service.exception.UsernameNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
