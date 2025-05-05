@@ -1,6 +1,7 @@
 package git.matheusoliveira04.api.fintrack.mapper;
 
 import git.matheusoliveira04.api.fintrack.dto.request.UserRequest;
+import git.matheusoliveira04.api.fintrack.dto.response.UserResponse;
 import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import org.mapstruct.*;
@@ -20,4 +21,12 @@ public abstract class UserMapper {
     @Mapping(target = "roles", ignore = true)
     protected abstract User toUser(UserRequest userRequest);
 
+    public UserResponse toUserResponse(User user) {
+        UserResponse userResponse = toUserResponseMapper(user);
+        user.getRoles().forEach(role -> userResponse.getRoleNames().add(role.getName()));
+        return userResponse;
+    }
+
+    @Mapping(target = "roleNames", ignore = true)
+    protected abstract UserResponse toUserResponseMapper(User user);
 }
