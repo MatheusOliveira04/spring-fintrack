@@ -6,10 +6,9 @@ import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
-import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +39,7 @@ public class UserController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<UserResponse> insert(@RequestBody @NotNull UserRequest userRequest) {
+    public ResponseEntity<UserResponse> insert(@RequestBody @Valid @NotNull UserRequest userRequest) {
         Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
         User user = userService.insert(userMapper.toUser(userRequest, roles));
         return ResponseEntity.ok(userMapper.toUserResponse(user));
