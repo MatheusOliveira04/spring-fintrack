@@ -7,9 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: db_fintrack
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgres
+    networks:
+      - net-fintrack
 
   adminer:
     image: adminer
@@ -17,11 +19,11 @@ services:
     ports:
       - "8008:8080"
     networks:
-      - net-pay-flow
+      - net-fintrack
 
 volumes:
   db_data:
 
 networks:
-  net-pay-flow:
+  net-fintrack:
     driver: bridge
