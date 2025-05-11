@@ -27,15 +27,17 @@ import java.util.UUID;
 @RequestMapping("/api/v1/user")
 public class UserController {
 
-    @Autowired
     private RoleRepository roleRepository;
-    @Autowired
     private UserService userService;
-    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
-
-    @Autowired
     private UserMapper userMapper;
+
+    public UserController(RoleRepository roleRepository, UserService userService, BCryptPasswordEncoder passwordEncoder, UserMapper userMapper) {
+        this.roleRepository = roleRepository;
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+    }
 
     @PostMapping
     @Transactional

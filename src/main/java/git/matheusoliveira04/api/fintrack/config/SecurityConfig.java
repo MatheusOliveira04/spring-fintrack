@@ -28,10 +28,13 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
-    @Autowired
     private JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtUserDetailsService jwtUserDetailsService, JwtAuthFilter jwtAuthFilter) {
+        this.jwtUserDetailsService = jwtUserDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
