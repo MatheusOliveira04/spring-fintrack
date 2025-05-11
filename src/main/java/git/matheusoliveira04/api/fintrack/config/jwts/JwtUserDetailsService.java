@@ -13,16 +13,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUserDetailsService implements UserDetailsService {
 
-    @Autowired
     private UserRepository userRepository;
+
+    public JwtUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        User user = userRepository.findByUsername(username).orElseThrow(null);
+        User user = userRepository.findByEmail(username).orElseThrow(null);
         return org.springframework.security.core.userdetails.
                 User.builder()
-                .username(user.getUsername())
+                .username(user.getEmail())
                 .password(user.getPassword())
                 .roles(user.getRoles().stream().map(Role::getName).toArray(String[]::new))
                 .build();

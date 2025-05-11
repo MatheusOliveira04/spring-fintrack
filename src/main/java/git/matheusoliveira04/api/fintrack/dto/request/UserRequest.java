@@ -1,5 +1,6 @@
 package git.matheusoliveira04.api.fintrack.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,8 +17,8 @@ import java.util.Set;
 public class UserRequest {
     @NotBlank @NotNull
     private String name;
-    @NotBlank @NotNull
-    private String username;
+    @NotBlank @NotNull @Email
+    private String email;
     @NotBlank @NotNull
     private String password;
     @NotNull @NotEmpty
