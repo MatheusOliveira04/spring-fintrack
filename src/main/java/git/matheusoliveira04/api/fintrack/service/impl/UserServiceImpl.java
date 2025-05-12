@@ -57,6 +57,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Override
+    public void delete(UUID id) {
+        userRepository.delete(findById(id));
+    }
+
     private void checkEmailIsUnique(User user) {
         Optional<User> userFound = userRepository.findByEmail(user.getEmail());
         if (userFound.isPresent() && user.getId() != userFound.get().getId()) {

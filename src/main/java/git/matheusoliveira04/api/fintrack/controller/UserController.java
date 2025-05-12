@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -80,5 +79,12 @@ public class UserController {
         var user = userMapper.toUser(userRequest, roles);
         user.setId(UUID.fromString(id));
         return ResponseEntity.ok(userMapper.toUserResponse(userService.update(user)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @NotNull @NotBlank String id) {
+        userService.delete(UUID.fromString(id));
+        return ResponseEntity.noContent().build();
     }
 }

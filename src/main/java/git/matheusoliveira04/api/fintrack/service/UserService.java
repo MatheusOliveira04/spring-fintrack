@@ -17,4 +17,6 @@ public interface UserService {
     Page<User> findAll(int page, int size);
 
     User update(@NotNull User user);
+
+    void delete(@NotNull UUID id);
 }
