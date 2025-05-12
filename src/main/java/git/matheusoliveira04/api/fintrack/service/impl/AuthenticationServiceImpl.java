@@ -33,8 +33,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Authentication authentication = authenticateUser(loginRequest);
 
         if (authentication.isAuthenticated()) {
-            var refreshToken = jwtUtil.generateRefreshToken(loginRequest.getUsername());
-            var token = jwtUtil.generateToken(loginRequest.getUsername());
+            var refreshToken = jwtUtil.generateRefreshToken(loginRequest.getEmail());
+            var token = jwtUtil.generateToken(loginRequest.getEmail());
             return LoginResponse.builder()
                     .accessToken(token)
                     .refreshToken(refreshToken)
@@ -46,7 +46,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Authentication authenticateUser(LoginRequest loginRequest) {
         return authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
     }
 
