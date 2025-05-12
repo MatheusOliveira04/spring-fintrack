@@ -1,5 +1,6 @@
 package git.matheusoliveira04.api.fintrack.controller.exception;
 
+import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import git.matheusoliveira04.api.fintrack.service.exception.UsernameNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,16 +20,27 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<StandardError> getUsernameNotFoundException(UsernameNotFoundException exception, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
                 new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage()))
         );
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<StandardError> getObjectNotFoundException(ObjectNotFoundException exception, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
                 new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage()))
         );
+    }
+
+    @ExceptionHandler(IntegrityViolationException.class)
+    public ResponseEntity<StandardError> getIntegrityViolationException(IntegrityViolationException exception, HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new StandardError(LocalDateTime.now(), HttpStatus.CONFLICT.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -48,7 +60,8 @@ public class ControllerExceptionHandler {
                 .stream()
                 .map(error -> extractErrorMessage(error.getPropertyPath().toString(), error.getMessage()))
                 .toList();
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(new StandardError(LocalDateTime.now(), HttpStatus.CONFLICT.value(), request.getRequestURI(), allErrors));
     }
 
