@@ -53,7 +53,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> findById(@PathVariable @NotBlank String id) {
+    public ResponseEntity<UserResponse> findById(@PathVariable @NotNull @NotBlank String id) {
         User user = userService.findById(UUID.fromString(id));
         return ResponseEntity.ok(userMapper.toUserResponse(user));
     }
@@ -69,5 +69,14 @@ public class UserController {
                 users.getTotalPages());
 
         return ResponseEntity.ok(userPageResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> update(@PathVariable @NotNull @NotBlank String id, @RequestBody UserRequest userRequest) {
+        Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
+        var user = userMapper.toUser(userRequest, roles);
+        user.setId(UUID.fromString(id));
+        return ResponseEntity.ok(userMapper.toUserResponse(userService.update(user)));
     }
 }

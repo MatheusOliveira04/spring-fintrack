@@ -3,12 +3,14 @@ package git.matheusoliveira04.api.fintrack.service.impl;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.UserService;
+import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,6 +27,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User insert(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        checkEmailIsUnique(user);
         return userRepository.save(user);
     }
 
@@ -42,5 +45,19 @@ public class UserServiceImpl implements UserService {
             throw new ObjectNotFoundException("No user found!");
         }
         return usersFound;
+    }
+
+    @Override
+    public User update(User user) {
+        findById(user.getId());
+        checkEmailIsUnique(user);
+        return userRepository.save(user);
+    }
+
+    private void checkEmailIsUnique(User user) {
+        Optional<User> userFound = userRepository.findByEmail(user.getEmail());
+        if (userFound.isPresent() && user.getId() != userFound.get().getId()) {
+            throw new IntegrityViolationException("Email already exists!");
+        }
     }
 }
