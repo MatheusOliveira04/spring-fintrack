@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashSet;
 import java.util.List;
@@ -44,11 +45,12 @@ public class UserController {
     }
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<UserResponse> insert(@RequestBody @Valid @NotNull UserRequest userRequest) {
+    public ResponseEntity<UserResponse> insert(@RequestBody @Valid @NotNull UserRequest userRequest, UriComponentsBuilder uriBuilder) {
         Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
         User user = userService.insert(userMapper.toUser(userRequest, roles));
-        return ResponseEntity.ok(userMapper.toUserResponse(user));
+        return ResponseEntity
+                .created(uriBuilder.path("/api/v1/user").buildAndExpand(user.getId()).toUri())
+                .body(userMapper.toUserResponse(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
