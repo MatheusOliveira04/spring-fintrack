@@ -1,6 +1,7 @@
 package git.matheusoliveira04.api.fintrack.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,9 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RoleName name;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
