@@ -19,11 +19,13 @@ public abstract class UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "entries", ignore = true)
+    @Mapping(target = "categories", ignore = true)
     protected abstract User toUser(UserRequest userRequest);
 
     public UserResponse toUserResponse(User user) {
         UserResponse userResponse = toUserResponseMapper(user);
-        user.getRoles().forEach(role -> userResponse.getRoleNames().add(role.getName()));
+        user.getRoles().forEach(role -> userResponse.getRoleNames().add(role.getName().toString()));
         return userResponse;
     }
 
