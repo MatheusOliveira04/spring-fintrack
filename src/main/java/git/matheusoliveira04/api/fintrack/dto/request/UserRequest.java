@@ -22,5 +22,5 @@ public class UserRequest {
     @NotBlank @NotNull
     private String password;
     @NotNull @NotEmpty
-    private Set<@NotBlank @NotNull String> roleName = new HashSet<>();
+    private Set<@NotBlank @NotNull String> roleNames = new HashSet<>();
 }

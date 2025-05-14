@@ -1,9 +1,7 @@
 package git.matheusoliveira04.api.fintrack.config.jwts;
 
-import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,7 +25,9 @@ public class JwtUserDetailsService implements UserDetailsService {
                 User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRoles().stream().map(Role::getName).toArray(String[]::new))
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().name())
+                        .toArray(String[]::new))
                 .build();
     }
 }

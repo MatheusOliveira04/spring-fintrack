@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.dto.response.UserPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.UserResponse;
 import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
+import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.mapper.UserPageMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
@@ -45,7 +46,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> insert(@RequestBody @Valid @NotNull UserRequest userRequest, UriComponentsBuilder uriBuilder) {
-        Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
+        Set<Role> roles = getRoles(userRequest);
         User user = userService.insert(userMapper.toUser(userRequest, roles));
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/user").buildAndExpand(user.getId()).toUri())
@@ -75,7 +76,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable @NotNull @NotBlank String id, @RequestBody UserRequest userRequest) {
-        Set<Role> roles = new HashSet<>(roleRepository.findByNameIn(userRequest.getRoleName().stream().toList()));
+        Set<Role> roles = getRoles(userRequest);
         var user = userMapper.toUser(userRequest, roles);
         user.setId(UUID.fromString(id));
         return ResponseEntity.ok(userMapper.toUserResponse(userService.update(user)));
@@ -86,5 +87,11 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable @NotNull @NotBlank String id) {
         userService.delete(UUID.fromString(id));
         return ResponseEntity.noContent().build();
+    }
+
+    private HashSet<Role> getRoles(UserRequest userRequest) {
+        return new HashSet<>(
+                roleRepository.findByNameIn(userRequest.getRoleNames().stream().map(RoleName::valueOf).toList())
+        );
     }
 }
