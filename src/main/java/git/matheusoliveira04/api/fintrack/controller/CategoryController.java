@@ -11,6 +11,7 @@ import git.matheusoliveira04.api.fintrack.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/v1/category")
@@ -32,11 +33,14 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
             @RequestBody Category category,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader("Authorization") String token,
+            UriComponentsBuilder uriBuilder) {
         var username = jwtUtil.extractUsername(extractBearerCharacters(token));
         var user = userService.findByEmail(username);
         category.setUser(user);
         var categorySaved = categoryService.insert(category);
-        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categorySaved));
+        return ResponseEntity
+                .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(category.getId()).toUri())
+                .body(categoryMapper.toCategoryResponse(categorySaved));
     }
 }
