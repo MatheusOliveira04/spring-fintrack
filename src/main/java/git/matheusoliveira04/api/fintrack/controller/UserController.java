@@ -56,8 +56,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findById(@PathVariable @NotNull @NotBlank String id) {
-        User user = userService.findById(UUID.fromString(id));
-        return ResponseEntity.ok(userMapper.toUserResponse(user));
+        return ResponseEntity.ok(userMapper.toUserResponse(userService.findById(UUID.fromString(id))));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/category")
 public class CategoryController {
@@ -42,5 +44,11 @@ public class CategoryController {
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(category.getId()).toUri())
                 .body(categoryMapper.toCategoryResponse(categorySaved));
+    }
+
+    @PreAuthorize("hasRole('BASIC')")
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> findById(@PathVariable String id) {
+        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.findById(UUID.fromString(id))));
     }
 }
