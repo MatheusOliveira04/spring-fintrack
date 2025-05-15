@@ -3,7 +3,9 @@ package git.matheusoliveira04.api.fintrack.controller;
 import static git.matheusoliveira04.api.fintrack.util.TokenUtil.*;
 
 import git.matheusoliveira04.api.fintrack.config.jwts.JwtUtil;
+import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
 import git.matheusoliveira04.api.fintrack.entity.Category;
+import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -17,22 +19,24 @@ public class CategoryController {
     private CategoryService categoryService;
     private UserService userService;
     private JwtUtil jwtUtil;
+    private CategoryMapper categoryMapper;
 
-    public CategoryController(CategoryService categoryService, UserService userService, JwtUtil jwtUtil) {
+    public CategoryController(CategoryService categoryService, UserService userService, JwtUtil jwtUtil, CategoryMapper categoryMapper) {
         this.categoryService = categoryService;
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.categoryMapper = categoryMapper;
     }
 
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
-    public ResponseEntity<Category> insert(
+    public ResponseEntity<CategoryResponse> insert(
             @RequestBody Category category,
             @RequestHeader("Authorization") String token) {
         var username = jwtUtil.extractUsername(extractBearerCharacters(token));
         var user = userService.findByEmail(username);
         category.setUser(user);
         var categorySaved = categoryService.insert(category);
-        return ResponseEntity.ok(categorySaved);
+        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categorySaved));
     }
 }
