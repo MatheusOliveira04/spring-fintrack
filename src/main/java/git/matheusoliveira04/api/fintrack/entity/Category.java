@@ -2,10 +2,7 @@ package git.matheusoliveira04.api.fintrack.entity;
 
 import git.matheusoliveira04.api.fintrack.entity.enums.CategoryName;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,12 +16,15 @@ import java.util.UUID;
 public class Category {
 
     @Id
+    @Setter
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Setter
     @Column(nullable = false)
     private String description;
 
+    @Setter
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private CategoryName type;
@@ -32,6 +32,7 @@ public class Category {
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Entry> entries;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
