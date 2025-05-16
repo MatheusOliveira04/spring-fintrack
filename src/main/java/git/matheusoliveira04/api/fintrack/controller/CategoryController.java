@@ -33,12 +33,11 @@ public class CategoryController {
             @RequestBody Category category,
             @RequestHeader("Authorization") String token,
             UriComponentsBuilder uriBuilder) {
-        var user = tokenUtil.getUser(token);
-        category.setUser(user);
-        var categorySaved = categoryService.insert(category);
+        category.setUser(tokenUtil.getUser(token));
+        var categoryInserted = categoryService.insert(category);
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(category.getId()).toUri())
-                .body(categoryMapper.toCategoryResponse(categorySaved));
+                .body(categoryMapper.toCategoryResponse(categoryInserted));
     }
 
     @PreAuthorize("hasRole('BASIC')")
@@ -51,9 +50,7 @@ public class CategoryController {
     @GetMapping("/user")
     public ResponseEntity<List<CategoryResponse>> findAllOfUser(
             @RequestHeader("Authorization") String token) {
-        var user = tokenUtil.getUser(token);
-        var categoryList = categoryService.findAllByUserId(user.getId());
-        List<CategoryResponse> categoryResponses = categoryMapper.toCategoryResponse(categoryList);
-        return ResponseEntity.ok(categoryResponses);
+        var categoryList = categoryService.findAllByUserId(tokenUtil.getUser(token).getId());
+        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryList));
     }
 }
