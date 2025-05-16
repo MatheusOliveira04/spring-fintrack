@@ -1,12 +1,9 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
-import git.matheusoliveira04.api.fintrack.config.jwts.JwtUtil;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
 import git.matheusoliveira04.api.fintrack.entity.Category;
-import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
-import git.matheusoliveira04.api.fintrack.service.UserService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,10 +53,7 @@ public class CategoryController {
             @RequestHeader("Authorization") String token) {
         var user = tokenUtil.getUser(token);
         var categoryList = categoryService.findAllByUserId(user.getId());
-        List<CategoryResponse> categoryResponses = categoryList
-                .stream()
-                .map(category -> categoryMapper.toCategoryResponse(category))
-                .toList();
+        List<CategoryResponse> categoryResponses = categoryMapper.toCategoryResponse(categoryList);
         return ResponseEntity.ok(categoryResponses);
     }
 }

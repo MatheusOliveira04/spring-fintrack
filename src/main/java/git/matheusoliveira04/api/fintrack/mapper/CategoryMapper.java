@@ -8,20 +8,28 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
 import java.util.Optional;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
-public abstract class CategoryMapper {
+public interface CategoryMapper {
 
     @Mapping(target = "userId", ignore = true)
-    protected abstract CategoryResponse toCategoryResponseMapper(Category category);
+    CategoryResponse toCategoryResponseMapper(Category category);
 
-    public CategoryResponse toCategoryResponse(Category category) {
+    default CategoryResponse toCategoryResponse(Category category) {
         CategoryResponse categoryResponse = toCategoryResponseMapper(category);
         Optional.ofNullable(category.getUser())
                 .map(User::getId)
                 .map(Object::toString)
                 .ifPresent(categoryResponse::setUserId);
         return categoryResponse;
+    }
+
+    default List<CategoryResponse> toCategoryResponse(List<Category> categories) {
+        return categories
+                .stream()
+                .map(this::toCategoryResponse)
+                .toList();
     }
 }
