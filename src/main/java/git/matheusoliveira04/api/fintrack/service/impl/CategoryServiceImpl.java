@@ -6,6 +6,7 @@ import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,5 +27,14 @@ public class CategoryServiceImpl implements CategoryService {
     public Category findById(UUID id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Category not found with id: " + id));
+    }
+
+    @Override
+    public List<Category> findAllByUserId(UUID id) {
+        List<Category> allByUserId = categoryRepository.findAllByUserId(id);
+        if (allByUserId.isEmpty()) {
+            throw new ObjectNotFoundException("No user category found!");
+        }
+        return allByUserId;
     }
 }
