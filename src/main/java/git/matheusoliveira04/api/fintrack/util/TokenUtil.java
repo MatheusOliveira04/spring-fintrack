@@ -17,6 +17,9 @@ public class TokenUtil {
     }
 
     public User getUser(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Invalid token: cannot be empty or null!");
+        }
         return userService.findByEmail(extractAuthorizationToken(token));
     }
 
