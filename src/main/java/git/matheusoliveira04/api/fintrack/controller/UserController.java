@@ -45,7 +45,9 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> insert(@RequestBody @Valid @NotNull UserRequest userRequest, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<UserResponse> insert(
+            @RequestBody @Valid @NotNull UserRequest userRequest,
+            UriComponentsBuilder uriBuilder) {
         Set<Role> roles = getRoles(userRequest);
         User user = userService.insert(userMapper.toUser(userRequest, roles));
         return ResponseEntity
@@ -74,7 +76,9 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable @NotNull @NotBlank String id, @RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserResponse> update(
+            @PathVariable @NotBlank String id,
+            @RequestBody UserRequest userRequest) {
         Set<Role> roles = getRoles(userRequest);
         var user = userMapper.toUser(userRequest, roles);
         user.setId(UUID.fromString(id));
@@ -83,7 +87,7 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @NotNull @NotBlank String id) {
+    public ResponseEntity<Void> delete(@PathVariable @NotBlank String id) {
         userService.delete(UUID.fromString(id));
         return ResponseEntity.noContent().build();
     }

@@ -1,8 +1,7 @@
 package git.matheusoliveira04.api.fintrack.service;
 
 import git.matheusoliveira04.api.fintrack.entity.User;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 
@@ -15,7 +14,7 @@ public interface UserService {
 
     User findById(@NotNull UUID id);
 
-    Page<User> findAll(int page, int size);
+    Page<User> findAll(@PositiveOrZero int page, @Positive @Max(100) int size);
 
     User update(@NotNull User user);
 

@@ -23,10 +23,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Setter
+    @Column(nullable = false)
     private String name;
     @Setter
+    @Column(nullable = false)
     private String email;
     @Setter
+    @Column(nullable = false)
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
