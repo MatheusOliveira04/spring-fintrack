@@ -5,14 +5,18 @@ import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/category")
 public class CategoryController {
@@ -30,7 +34,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
-            @RequestBody CategoryRequest categoryRequest,
+            @RequestBody @Valid CategoryRequest categoryRequest,
             @RequestHeader("Authorization") String token,
             UriComponentsBuilder uriBuilder) {
         var category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUser(token));
@@ -42,7 +46,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> findById(@PathVariable String id) {
+    public ResponseEntity<CategoryResponse> findById(@PathVariable @NotBlank String id) {
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.findById(UUID.fromString(id))));
     }
 

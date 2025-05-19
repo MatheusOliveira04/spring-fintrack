@@ -14,5 +14,5 @@ public interface CategoryService {
 
     Category findById(@NotNull UUID id);
 
-    List<Category> findAllByUserId(UUID id);
+    List<Category> findAllByUserId(@NotNull UUID id);
 }
