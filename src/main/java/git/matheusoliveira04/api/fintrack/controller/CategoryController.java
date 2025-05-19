@@ -1,7 +1,7 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
+import git.matheusoliveira04.api.fintrack.dto.request.CategoryRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
-import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
@@ -30,13 +30,13 @@ public class CategoryController {
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
-            @RequestBody Category category,
+            @RequestBody CategoryRequest categoryRequest,
             @RequestHeader("Authorization") String token,
             UriComponentsBuilder uriBuilder) {
-        category.setUser(tokenUtil.getUser(token));
+        var category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUser(token));
         var categoryInserted = categoryService.insert(category);
         return ResponseEntity
-                .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(category.getId()).toUri())
+                .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(categoryInserted.getId()).toUri())
                 .body(categoryMapper.toCategoryResponse(categoryInserted));
     }
 
