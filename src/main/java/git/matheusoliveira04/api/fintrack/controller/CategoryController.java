@@ -8,6 +8,8 @@ import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
@@ -40,6 +42,7 @@ public class CategoryController {
         this.tokenUtil = tokenUtil;
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
@@ -53,12 +56,14 @@ public class CategoryController {
                 .body(categoryMapper.toCategoryResponse(categoryInserted));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable @NotBlank String id) {
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.findById(UUID.fromString(id))));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
     public ResponseEntity<CategoryPageResponse> findAllOfUser(

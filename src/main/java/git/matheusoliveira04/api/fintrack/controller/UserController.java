@@ -10,6 +10,8 @@ import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.mapper.UserPageMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
 import git.matheusoliveira04.api.fintrack.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
@@ -55,12 +57,14 @@ public class UserController {
                 .body(userMapper.toUserResponse(user));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findById(@PathVariable @NotNull @NotBlank String id) {
         return ResponseEntity.ok(userMapper.toUserResponse(userService.findById(UUID.fromString(id))));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<UserPageResponse> findAll(
@@ -72,6 +76,7 @@ public class UserController {
         return ResponseEntity.ok(userPageResponse);
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(
@@ -83,6 +88,7 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toUserResponse(userService.update(user)));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable @NotBlank String id) {

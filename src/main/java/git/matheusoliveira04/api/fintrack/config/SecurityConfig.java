@@ -2,7 +2,6 @@ package git.matheusoliveira04.api.fintrack.config;
 
 import git.matheusoliveira04.api.fintrack.config.jwts.JwtAuthFilter;
 import git.matheusoliveira04.api.fintrack.config.jwts.JwtUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,6 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static git.matheusoliveira04.api.fintrack.config.SwaggerConfig.SWAGGER_WHITE_LIST_URL;
+
 @EnableMethodSecurity(securedEnabled = true)
 @EnableWebSecurity
 @Configuration
@@ -30,6 +31,9 @@ public class SecurityConfig {
 
     private JwtUserDetailsService jwtUserDetailsService;
     private JwtAuthFilter jwtAuthFilter;
+
+    private static final String AUTH_CONTROLLER_PATH = "/api/v1/auth/**";
+    private static final String USER_CREATE_PATH = "/api/v1/auth/**";
 
     public SecurityConfig(JwtUserDetailsService jwtUserDetailsService, JwtAuthFilter jwtAuthFilter) {
         this.jwtUserDetailsService = jwtUserDetailsService;
@@ -41,9 +45,10 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
-                  auth.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                  .requestMatchers(HttpMethod.POST, "/api/v1/user").permitAll()
-                          .anyRequest().authenticated();
+                  auth.requestMatchers(HttpMethod.POST, AUTH_CONTROLLER_PATH).permitAll()
+                    .requestMatchers(HttpMethod.POST, USER_CREATE_PATH).permitAll()
+                    .requestMatchers(SWAGGER_WHITE_LIST_URL).permitAll()
+                    .anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
