@@ -4,9 +4,10 @@ import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.repository.CategoryRepository;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,11 +31,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> findAllByUserId(UUID id) {
-        List<Category> allByUserId = categoryRepository.findAllByUserId(id);
-        if (allByUserId.isEmpty()) {
+    public Page<Category> findAllByUserId(UUID userId, int page, int size) {
+        Page<Category> allCategoriesByUserId = categoryRepository.findAllByUserId(userId, PageRequest.of(page, size));
+        if (allCategoriesByUserId.isEmpty()) {
             throw new ObjectNotFoundException("No user category found!");
         }
-        return allByUserId;
+        return allCategoriesByUserId;
     }
 }
