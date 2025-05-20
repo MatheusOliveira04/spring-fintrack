@@ -6,6 +6,7 @@ import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import org.mapstruct.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
@@ -31,5 +32,12 @@ public interface UserMapper {
         UserResponse userResponse = toUserResponseMapper(user);
         user.getRoles().forEach(role -> userResponse.getRoleNames().add(role.getName().toString()));
         return userResponse;
+    }
+
+    default List<UserResponse> toUserResponse(List<User> users) {
+        return users
+                .stream()
+                .map(this::toUserResponse)
+                .toList();
     }
 }
