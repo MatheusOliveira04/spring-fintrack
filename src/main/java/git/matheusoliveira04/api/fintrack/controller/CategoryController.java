@@ -1,12 +1,19 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
 import git.matheusoliveira04.api.fintrack.dto.request.CategoryRequest;
+import git.matheusoliveira04.api.fintrack.dto.response.CategoryPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
+import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
+import git.matheusoliveira04.api.fintrack.mapper.CategoryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -21,13 +28,15 @@ import java.util.UUID;
 @RequestMapping("/api/v1/category")
 public class CategoryController {
 
-    private CategoryService categoryService;
     private CategoryMapper categoryMapper;
+    private CategoryPageMapper categoryPageMapper;
+    private CategoryService categoryService;
     private TokenUtil tokenUtil;
 
-    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper, TokenUtil tokenUtil) {
-        this.categoryService = categoryService;
+    public CategoryController(CategoryMapper categoryMapper, CategoryPageMapper categoryPageMapper, CategoryService categoryService, TokenUtil tokenUtil) {
         this.categoryMapper = categoryMapper;
+        this.categoryPageMapper = categoryPageMapper;
+        this.categoryService = categoryService;
         this.tokenUtil = tokenUtil;
     }
 
@@ -37,8 +46,8 @@ public class CategoryController {
             @RequestBody @Valid CategoryRequest categoryRequest,
             @RequestHeader("Authorization") String token,
             UriComponentsBuilder uriBuilder) {
-        var category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUser(token));
-        var categoryInserted = categoryService.insert(category);
+        Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUser(token));
+        Category categoryInserted = categoryService.insert(category);
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(categoryInserted.getId()).toUri())
                 .body(categoryMapper.toCategoryResponse(categoryInserted));
@@ -52,9 +61,13 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
-    public ResponseEntity<List<CategoryResponse>> findAllOfUser(
+    public ResponseEntity<CategoryPageResponse> findAllOfUser(
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @RequestHeader("Authorization") String token) {
-        var categoryList = categoryService.findAllByUserId(tokenUtil.getUser(token).getId());
-        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryList));
+        Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUser(token).getId(), page, size);
+        List<CategoryResponse> categoryResponseList = categoryMapper.toCategoryResponse(categoryPage.toList());
+        CategoryPageResponse categoryPageResponse = categoryPageMapper.toCategoryPageResponse(categoryResponseList, categoryPage);
+        return ResponseEntity.ok(categoryPageResponse);
     }
 }
