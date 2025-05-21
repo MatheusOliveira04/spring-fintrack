@@ -38,4 +38,10 @@ public class CategoryServiceImpl implements CategoryService {
         }
         return allCategoriesByUserId;
     }
+
+    @Override
+    public Category update(Category category) {
+        findById(category.getId());
+        return categoryRepository.save(category);
+    }
 }

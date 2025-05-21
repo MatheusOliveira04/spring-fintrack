@@ -18,4 +18,6 @@ public interface CategoryService {
     Category findById(@NotNull UUID id);
 
     Page<Category> findAllByUserId(@NotNull UUID userId, @PositiveOrZero int page, @Positive @Max(100) int size);
+
+    Category update(@NotNull Category category);
 }
