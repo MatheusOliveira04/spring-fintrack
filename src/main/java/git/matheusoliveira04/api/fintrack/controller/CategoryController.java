@@ -4,6 +4,7 @@ import git.matheusoliveira04.api.fintrack.dto.request.CategoryRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
 import git.matheusoliveira04.api.fintrack.entity.Category;
+import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
@@ -49,7 +50,7 @@ public class CategoryController {
             @RequestBody @Valid CategoryRequest categoryRequest,
             @RequestHeader("Authorization") String token,
             UriComponentsBuilder uriBuilder) {
-        Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUser(token));
+        Category category = categoryMapper.toCategory(categoryRequest, getUserByToken(token));
         Category categoryInserted = categoryService.insert(category);
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/category/{id}").buildAndExpand(categoryInserted.getId()).toUri())
@@ -70,9 +71,25 @@ public class CategoryController {
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @RequestHeader("Authorization") String token) {
-        Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUser(token).getId(), page, size);
+        Page<Category> categoryPage = categoryService.findAllByUserId(getUserByToken(token).getId(), page, size);
         List<CategoryResponse> categoryResponseList = categoryMapper.toCategoryResponse(categoryPage.toList());
         CategoryPageResponse categoryPageResponse = categoryPageMapper.toCategoryPageResponse(categoryResponseList, categoryPage);
         return ResponseEntity.ok(categoryPageResponse);
+    }
+
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @PreAuthorize("hasRole('BASIC')")
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryResponse> update(
+            @RequestBody @Valid CategoryRequest categoryRequest,
+            @PathVariable @NotBlank String id,
+            @RequestHeader("Authorization") String token) {
+        Category category = categoryMapper.toCategory(categoryRequest, getUserByToken(token));
+        category.setId(UUID.fromString(id));
+        return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.update(category)));
+    }
+
+    private User getUserByToken(String token) {
+        return tokenUtil.getUserByToken(token);
     }
 }
