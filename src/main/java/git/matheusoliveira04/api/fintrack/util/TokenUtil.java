@@ -16,7 +16,7 @@ public class TokenUtil {
         this.userService = userService;
     }
 
-    public User getUser(String token) {
+    public User getUserByToken(String token) {
         if (token == null || token.isBlank()) {
             throw new IllegalArgumentException("Invalid token: cannot be empty or null!");
         }
