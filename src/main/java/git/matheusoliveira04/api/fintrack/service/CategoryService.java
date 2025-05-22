@@ -12,13 +12,11 @@ public interface CategoryService {
 
     Category insert(@NotNull Category category);
 
-    Category findById(@NotNull UUID id);
+    Category findByIdAndUserId(@NotNull UUID categoryId, @NotNull UUID userId);
 
     Page<Category> findAllByUserId(@NotNull UUID userId, @PositiveOrZero int page, @Positive @Max(100) int size);
 
     Category update(@NotNull Category category);
 
-    void delete(@NotNull UUID categoryId, @NotBlank String token);
-
-    Category findByIdAndValidateOwnership(@NotNull UUID categoryId, @NotNull UUID userId);
+    void delete(@NotNull UUID categoryId, @NotNull UUID userId);
 }
