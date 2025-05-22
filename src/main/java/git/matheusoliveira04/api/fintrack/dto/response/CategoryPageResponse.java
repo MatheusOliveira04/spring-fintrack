@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryPageResponse {
+public class CategoryPageResponse implements Serializable {
     private List<CategoryResponse> categoryResponses;
     Long totalItems;
     Integer totalPages;
