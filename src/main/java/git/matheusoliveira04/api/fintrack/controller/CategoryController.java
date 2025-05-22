@@ -61,6 +61,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable @NotBlank String id) {
+        //TODO: Implemented filter by user
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.findById(UUID.fromString(id))));
     }
 
@@ -87,6 +88,16 @@ public class CategoryController {
         Category category = categoryMapper.toCategory(categoryRequest, getUserByToken(token));
         category.setId(UUID.fromString(id));
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.update(category)));
+    }
+
+    @PreAuthorize("hasRole('BASIC')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable @NotBlank String id,
+            @RequestHeader("Authorization") String token
+    ) {
+        categoryService.delete(UUID.fromString(id), token);
+        return ResponseEntity.noContent().build();
     }
 
     private User getUserByToken(String token) {
