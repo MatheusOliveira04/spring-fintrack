@@ -1,10 +1,7 @@
 package git.matheusoliveira04.api.fintrack.service;
 
 import git.matheusoliveira04.api.fintrack.entity.Category;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 
@@ -20,4 +17,8 @@ public interface CategoryService {
     Page<Category> findAllByUserId(@NotNull UUID userId, @PositiveOrZero int page, @Positive @Max(100) int size);
 
     Category update(@NotNull Category category);
+
+    void delete(@NotNull UUID categoryId, @NotBlank String token);
+
+    Category findByIdAndValidateOwnership(@NotNull UUID categoryId, @NotNull UUID userId);
 }
