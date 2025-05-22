@@ -92,6 +92,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.update(category)));
     }
 
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
