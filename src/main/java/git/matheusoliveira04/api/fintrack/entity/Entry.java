@@ -7,10 +7,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@EqualsAndHashCode(of = "id")
+@Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "tb_entry")
 public class Entry {
