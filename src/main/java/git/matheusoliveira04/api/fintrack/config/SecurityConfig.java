@@ -33,7 +33,7 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     private static final String AUTH_CONTROLLER_PATH = "/api/v1/auth/**";
-    private static final String USER_CREATE_PATH = "/api/v1/auth/**";
+    private static final String USER_CREATE_PATH = "/api/v1/user";
 
     public SecurityConfig(JwtUserDetailsService jwtUserDetailsService, JwtAuthFilter jwtAuthFilter) {
         this.jwtUserDetailsService = jwtUserDetailsService;
