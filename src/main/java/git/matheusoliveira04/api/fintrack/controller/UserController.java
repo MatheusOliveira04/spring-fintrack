@@ -34,14 +34,12 @@ public class UserController {
 
     private RoleRepository roleRepository;
     private UserService userService;
-    private BCryptPasswordEncoder passwordEncoder;
     private UserMapper userMapper;
     private UserPageMapper userPageMapper;
 
-    public UserController(RoleRepository roleRepository, UserService userService, BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, UserPageMapper userPageMapper) {
+    public UserController(RoleRepository roleRepository, UserService userService, UserMapper userMapper, UserPageMapper userPageMapper) {
         this.roleRepository = roleRepository;
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.userPageMapper = userPageMapper;
     }
