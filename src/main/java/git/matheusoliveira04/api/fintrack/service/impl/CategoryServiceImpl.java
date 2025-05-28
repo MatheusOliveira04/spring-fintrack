@@ -35,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new ObjectNotFoundException("Category not found with id: " + categoryId));
     }
 
-    @Cacheable(value = "categories", key = "#token + '-' + #page + '-' + #size")
+    @Cacheable(value = "categories", key = "#userId + '-' + #page + '-' + #size")
     @Override
     public Page<Category> findAllByUserId(UUID userId, int page, int size) {
         Page<Category> allCategoriesByUserId = categoryRepository.findAllByUserId(userId, PageRequest.of(page, size));
