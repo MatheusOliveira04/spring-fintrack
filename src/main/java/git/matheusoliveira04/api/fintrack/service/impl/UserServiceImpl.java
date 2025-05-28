@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.UserService;
 import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User insert(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        setPasswordWithEncoder(user);
         checkEmailIsUnique(user);
         return userRepository.save(user);
     }
@@ -54,6 +55,7 @@ public class UserServiceImpl implements UserService {
     public User update(User user) {
         findById(user.getId());
         checkEmailIsUnique(user);
+        setPasswordWithEncoder(user);
         return userRepository.save(user);
     }
 
@@ -74,5 +76,9 @@ public class UserServiceImpl implements UserService {
         if (userFound.isPresent() && user.getId() != userFound.get().getId()) {
             throw new IntegrityViolationException("Email already exists!");
         }
+    }
+
+    private void setPasswordWithEncoder(@NotNull User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
     }
 }
