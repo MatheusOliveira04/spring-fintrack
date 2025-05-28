@@ -3,6 +3,7 @@ package git.matheusoliveira04.api.fintrack.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "tb_entry")
-public class Entry {
+public class Entry implements Serializable {
 
     @Id
     @Setter

@@ -4,6 +4,7 @@ import git.matheusoliveira04.api.fintrack.entity.enums.CategoryName;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "tb_category")
-public class Category {
+public class Category implements Serializable {
 
     @Id
     @Setter
