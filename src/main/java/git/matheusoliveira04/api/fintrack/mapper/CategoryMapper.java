@@ -18,7 +18,6 @@ public interface CategoryMapper {
     Category toCategoryMapper(CategoryRequest categoryRequest);
 
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "entries", ignore = true)
     CategoryResponse toCategoryResponseMapper(Category category);
 
     default Category toCategory(CategoryRequest categoryRequest, @Context User user) {
