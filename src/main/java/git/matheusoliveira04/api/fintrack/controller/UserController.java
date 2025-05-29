@@ -10,6 +10,7 @@ import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.mapper.UserPageMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
 import git.matheusoliveira04.api.fintrack.service.UserService;
+import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -17,7 +18,6 @@ import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -58,7 +58,7 @@ public class UserController {
     @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> findById(@PathVariable @NotNull @NotBlank String id) {
+    public ResponseEntity<UserResponse> findById(@PathVariable @NotNull @NotBlank @ValidUUID String id) {
         return ResponseEntity.ok(userMapper.toUserResponse(userService.findById(UUID.fromString(id))));
     }
 
@@ -78,7 +78,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(
-            @PathVariable @NotBlank String id,
+            @PathVariable @NotBlank @ValidUUID String id,
             @RequestBody UserRequest userRequest) {
         Set<Role> roles = getRoles(userRequest);
         var user = userMapper.toUser(userRequest, roles);
@@ -89,7 +89,7 @@ public class UserController {
     @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @NotBlank String id) {
+    public ResponseEntity<Void> delete(@PathVariable @NotBlank @ValidUUID String id) {
         userService.delete(UUID.fromString(id));
         return ResponseEntity.noContent().build();
     }

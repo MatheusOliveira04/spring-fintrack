@@ -8,6 +8,7 @@ import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
+import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -60,7 +61,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(
-            @PathVariable @NotBlank String id,
+            @PathVariable @NotBlank @ValidUUID String id,
             @RequestHeader("Authorization") String token) {
         UUID userId = tokenUtil.getUserByToken(token).getId();
         Category category = categoryService.findByIdAndUserId(UUID.fromString(id), userId);
@@ -85,7 +86,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(
             @RequestBody @Valid CategoryRequest categoryRequest,
-            @PathVariable @NotBlank String id,
+            @PathVariable @NotBlank @ValidUUID String id,
             @RequestHeader("Authorization") String token) {
         Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUserByToken(token));
         category.setId(UUID.fromString(id));
@@ -96,7 +97,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable @NotBlank String id,
+            @PathVariable @NotBlank @ValidUUID String id,
             @RequestHeader("Authorization") String token
     ) {
         UUID categoryId = UUID.fromString(id);
