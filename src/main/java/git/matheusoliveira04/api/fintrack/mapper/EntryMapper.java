@@ -11,12 +11,12 @@ import jakarta.validation.constraints.NotNull;
 import org.mapstruct.*;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Validated
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
-unmappedTargetPolicy = ReportingPolicy.ERROR,
-uses = { CategoryMapper.class })
+        unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface EntryMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -50,5 +50,16 @@ public interface EntryMapper {
 
         entryResponse.setCategory(categoryMapper.toCategoryResponse(category));
         entryResponse.setUserId(user.getId().toString());
+    }
+
+    @AfterMapping
+    default void applyDefaults(@MappingTarget Entry entry, EntryRequest request) {
+        paidDefaultValue(entry, request);
+    }
+
+    private void paidDefaultValue(Entry entry, EntryRequest request) {
+        if (Objects.isNull(request.getPaid())) {
+            entry.setPaid(false);
+        }
     }
 }

@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Setter
+@Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,12 +31,16 @@ public class Entry implements Serializable {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Setter
+    @Builder.Default
     private Boolean paid = false;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
