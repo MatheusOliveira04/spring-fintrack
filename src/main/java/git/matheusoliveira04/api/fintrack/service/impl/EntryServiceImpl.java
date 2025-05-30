@@ -32,4 +32,10 @@ public class EntryServiceImpl implements EntryService {
         }
         return entries;
     }
+
+    @Override
+    public Entry findByIdAndUserId(UUID entryId, UUID userId) {
+        return entryRepository.findByIdAndUserId(entryId, userId)
+                .orElseThrow(() -> new ObjectNotFoundException("Entry not found with id: " + entryId));
+    }
 }

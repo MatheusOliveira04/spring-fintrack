@@ -17,4 +17,6 @@ public interface EntryService {
     Entry insert(@NotNull @Valid Entry entry);
 
     Page<Entry> findAllByUserId(@NotNull UUID userId, @PositiveOrZero int page, @Positive @Max(100) int size);
+
+    Entry findByIdAndUserId(@NotNull UUID entryId, @NotNull UUID userId);
 }
