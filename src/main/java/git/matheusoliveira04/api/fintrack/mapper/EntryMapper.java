@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
+import static java.util.Optional.*;
 
 @Validated
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
@@ -23,17 +23,7 @@ public interface EntryMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "user", ignore = true)
-    Entry mapToEntry(EntryRequest entryRequest);
-
-    default Entry toEntry(
-            EntryRequest entryRequest,
-            @Context @NotNull @Valid Category category,
-            @Context @NotNull @Valid User user) {
-        Entry entry = mapToEntry(entryRequest);
-        entry.setCategory(category);
-        entry.setUser(user);
-        return entry;
-    }
+    Entry toEntry(EntryRequest entryRequest, @Context @NotNull @Valid Category category, @Context @NotNull @Valid User user);
 
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "userId", ignore = true)
@@ -42,22 +32,30 @@ public interface EntryMapper {
     List<EntryResponse> toEntryResponse(List<Entry> entries, @Context CategoryMapper categoryMapper);
 
     @AfterMapping
+    default void mapToEntry(@MappingTarget Entry entry,
+                            EntryRequest request,
+                            @Context @NotNull @Valid Category category,
+                            @Context @NotNull @Valid User user) {
+        entry.setCategory(category);
+        entry.setUser(user);
+        paidDefaultValue(entry, request);
+    }
+
+    @AfterMapping
     default void mapToEntryResponse(
             @MappingTarget EntryResponse entryResponse,
             @NotNull @Valid Entry entry,
             @Context CategoryMapper categoryMapper) {
-        Category category = Optional.ofNullable(entry.getCategory())
-                .orElseThrow(() -> new IntegrityViolationException("Category is missing from entry"));
-        User user = Optional.ofNullable(entry.getUser())
-                .orElseThrow(() -> new IntegrityViolationException("User is missing from entry"));
-
-        entryResponse.setCategory(categoryMapper.toCategoryResponse(category));
-        entryResponse.setUserId(user.getId().toString());
-    }
-
-    @AfterMapping
-    default void applyDefaults(@MappingTarget Entry entry, EntryRequest request) {
-        paidDefaultValue(entry, request);
+        ofNullable(entry)
+                .map(Entry::getCategory)
+                .ifPresent(
+                        category -> entryResponse.setCategory(categoryMapper.toCategoryResponse(category))
+                );
+        ofNullable(entry)
+                .map(Entry::getUser)
+                        .ifPresent(
+                                user -> entryResponse.setUserId(user.getId().toString())
+                        );
     }
 
     private void paidDefaultValue(Entry entry, EntryRequest request) {
