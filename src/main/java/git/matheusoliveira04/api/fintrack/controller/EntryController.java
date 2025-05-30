@@ -12,10 +12,12 @@ import git.matheusoliveira04.api.fintrack.mapper.EntryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
+import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.data.domain.Page;
@@ -80,6 +82,17 @@ public class EntryController {
         List<EntryResponse> entryResponse = entryMapper.toEntryResponse(allByUserId.toList(), categoryMapper);
 
         return ResponseEntity.ok(entryPageMapper.toEntryPageResponse(entryResponse, allByUserId));
+    }
+
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @PreAuthorize("hasRole('BASIC')")
+    @GetMapping("/{id}")
+    public ResponseEntity<EntryResponse> findByIdAndUser(
+            @PathVariable @NotBlank @ValidUUID String id,
+            @RequestHeader("Authorization") String token) {
+        UUID userId = tokenUtil.getUserIdByToken(token);
+        Entry entryFound = entryService.findByIdAndUserId(UUID.fromString(id), userId);
+        return ResponseEntity.ok(entryMapper.toEntryResponse(entryFound, categoryMapper));
     }
 
 
