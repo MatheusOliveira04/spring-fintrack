@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import org.mapstruct.*;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -37,6 +38,8 @@ public interface EntryMapper {
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "userId", ignore = true)
     EntryResponse toEntryResponse(@NotNull Entry entry, @Context CategoryMapper categoryMapper);
+
+    List<EntryResponse> toEntryResponse(List<Entry> entries, @Context CategoryMapper categoryMapper);
 
     @AfterMapping
     default void mapToEntryResponse(
