@@ -15,11 +15,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/entry")
 public class EntryController {
@@ -54,6 +57,16 @@ public class EntryController {
         return ResponseEntity
                 .created(uriBuilder.path("/api/v1/entry/{id}").buildAndExpand(entryInserted.getId()).toUri())
                 .body(entryMapper.toEntryResponse(entryInserted, categoryMapper));
+    }
+
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @PreAuthorize("hasRole('BASIC')")
+    @GetMapping("/user")
+    public ResponseEntity<List<EntryResponse>> findAllByUser(@RequestHeader("Authorization") String token) {
+        UUID userId = tokenUtil.getUserIdByToken(token);
+        List<EntryResponse> entryResponses = entryMapper
+                .toEntryResponse(entryService.findAllByUserId(userId), categoryMapper);
+        return ResponseEntity.ok(entryResponses);
     }
 
 
