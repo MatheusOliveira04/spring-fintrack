@@ -1,18 +1,24 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
 import git.matheusoliveira04.api.fintrack.dto.request.EntryRequest;
+import git.matheusoliveira04.api.fintrack.dto.response.EntryPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
 import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.EntryMapper;
+import git.matheusoliveira04.api.fintrack.mapper.EntryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -29,15 +35,17 @@ public class EntryController {
 
     private CategoryService categoryService;
     private CategoryMapper categoryMapper;
-    private EntryService entryService;
     private EntryMapper entryMapper;
+    private EntryPageMapper entryPageMapper;
+    private EntryService entryService;
     private TokenUtil tokenUtil;
 
-    public EntryController(CategoryService categoryService, CategoryMapper categoryMapper, EntryService entryService, EntryMapper entryMapper, TokenUtil tokenUtil) {
+    public EntryController(CategoryService categoryService, CategoryMapper categoryMapper, EntryMapper entryMapper, EntryPageMapper entryPageMapper, EntryService entryService, TokenUtil tokenUtil) {
         this.categoryService = categoryService;
         this.categoryMapper = categoryMapper;
-        this.entryService = entryService;
         this.entryMapper = entryMapper;
+        this.entryPageMapper = entryPageMapper;
+        this.entryService = entryService;
         this.tokenUtil = tokenUtil;
     }
 
@@ -62,11 +70,16 @@ public class EntryController {
     @Operation(security = {@SecurityRequirement(name = "bearer-key")})
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
-    public ResponseEntity<List<EntryResponse>> findAllByUser(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<EntryPageResponse> findAllByUser(
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
+            @RequestHeader("Authorization") String token
+            ) {
         UUID userId = tokenUtil.getUserIdByToken(token);
-        List<EntryResponse> entryResponses = entryMapper
-                .toEntryResponse(entryService.findAllByUserId(userId), categoryMapper);
-        return ResponseEntity.ok(entryResponses);
+        Page<Entry> allByUserId = entryService.findAllByUserId(userId, page, size);
+        List<EntryResponse> entryResponse = entryMapper.toEntryResponse(allByUserId.toList(), categoryMapper);
+
+        return ResponseEntity.ok(entryPageMapper.toEntryPageResponse(entryResponse, allByUserId));
     }
 
 
