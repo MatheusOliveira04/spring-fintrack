@@ -17,27 +17,20 @@ public interface UserMapper {
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "entries", ignore = true)
     @Mapping(target = "categories", ignore = true)
-    User toUser(UserRequest userRequest);
+    User toUser(UserRequest userRequest, @Context Set<Role> roles);
 
     @Mapping(target = "roleNames", ignore = true)
-    UserResponse toUserResponseMapper(User user);
+    UserResponse toUserResponse(User user);
 
-    default User toUser(UserRequest userRequest, @Context Set<Role> roles) {
-        User user = toUser(userRequest);
+    List<UserResponse> toUserResponses(List<User> users);
+
+    @AfterMapping
+    default void mapToUser(@MappingTarget User user, UserRequest userRequest, @Context Set<Role> roles) {
         user.addAllRoles(roles);
-        return user;
     }
 
-    default UserResponse toUserResponse(User user) {
-        UserResponse userResponse = toUserResponseMapper(user);
+    @AfterMapping
+    default void mapToUserResponse(@MappingTarget UserResponse userResponse, User user) {
         user.getRoles().forEach(role -> userResponse.getRoleNames().add(role.getName().toString()));
-        return userResponse;
-    }
-
-    default List<UserResponse> toUserResponse(List<User> users) {
-        return users
-                .stream()
-                .map(this::toUserResponse)
-                .toList();
     }
 }
