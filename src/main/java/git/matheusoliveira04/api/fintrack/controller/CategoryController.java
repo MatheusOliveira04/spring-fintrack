@@ -71,7 +71,7 @@ public class CategoryController {
     @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
-    public ResponseEntity<CategoryPageResponse> findAllOfUser(
+    public ResponseEntity<CategoryPageResponse> findAllByUser(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @RequestHeader("Authorization") String token) {
