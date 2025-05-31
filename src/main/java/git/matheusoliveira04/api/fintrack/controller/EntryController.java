@@ -95,5 +95,20 @@ public class EntryController {
         return ResponseEntity.ok(entryMapper.toEntryResponse(entryFound, categoryMapper));
     }
 
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @PreAuthorize("hasRole('BASIC')")
+    @PutMapping("/{id}")
+    public ResponseEntity<EntryResponse> update(
+            @PathVariable @NotBlank @ValidUUID String id,
+            @RequestBody @Valid EntryRequest entryRequest,
+            @RequestHeader("Authorization") String token
+    ) {
+        User user = tokenUtil.getUserByToken(token);
+        Category category = categoryService.findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
+        Entry entry = entryMapper.toEntry(entryRequest, category, user);
+        entry.setId(UUID.fromString(id));
+        return ResponseEntity.ok(entryMapper.toEntryResponse(entryService.update(entry), categoryMapper));
+    }
+
 
 }
