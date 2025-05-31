@@ -38,4 +38,10 @@ public class EntryServiceImpl implements EntryService {
         return entryRepository.findByIdAndUserId(entryId, userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Entry not found with id: " + entryId));
     }
+
+    @Override
+    public Entry update(Entry entry) {
+        findByIdAndUserId(entry.getId(), entry.getUser().getId());
+        return entryRepository.save(entry);
+    }
 }
