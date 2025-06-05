@@ -110,5 +110,17 @@ public class EntryController {
         return ResponseEntity.ok(entryMapper.toEntryResponse(entryService.update(entry), categoryMapper));
     }
 
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @PreAuthorize("hasRole('BASIC')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable @NotBlank @ValidUUID String id,
+            @RequestHeader("Authorization") String token) {
+        UUID userId = tokenUtil.getUserIdByToken(token);
+        UUID entryId = UUID.fromString(id);
+        entryService.delete(entryId, userId);
+      return ResponseEntity.noContent().build();
+    }
+
 
 }
