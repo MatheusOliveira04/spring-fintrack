@@ -21,4 +21,6 @@ public interface EntryService {
     Entry findByIdAndUserId(@NotNull UUID entryId, @NotNull UUID userId);
 
     Entry update(@NotNull Entry entry);
+
+    void delete(@NotNull UUID entryId, @NotNull UUID userId);
 }

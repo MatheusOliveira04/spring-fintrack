@@ -44,4 +44,9 @@ public class EntryServiceImpl implements EntryService {
         findByIdAndUserId(entry.getId(), entry.getUser().getId());
         return entryRepository.save(entry);
     }
+
+    @Override
+    public void delete(UUID entryId, UUID userId) {
+        entryRepository.delete(findByIdAndUserId(entryId, userId));
+    }
 }
