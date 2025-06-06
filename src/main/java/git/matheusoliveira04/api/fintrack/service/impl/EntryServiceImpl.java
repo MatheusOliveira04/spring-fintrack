@@ -1,22 +1,45 @@
 package git.matheusoliveira04.api.fintrack.service.impl;
 
+import git.matheusoliveira04.api.fintrack.dto.request.EntryRequest;
+import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.entity.Entry;
+import git.matheusoliveira04.api.fintrack.entity.User;
+import git.matheusoliveira04.api.fintrack.file.exception.FileProcessingException;
+import git.matheusoliveira04.api.fintrack.file.importer.contract.FileImporter;
+import git.matheusoliveira04.api.fintrack.file.importer.factory.EntryFileImporterFactory;
+import git.matheusoliveira04.api.fintrack.mapper.EntryMapper;
 import git.matheusoliveira04.api.fintrack.repository.EntryRepository;
+import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class EntryServiceImpl implements EntryService {
 
+    private CategoryService categoryService;
+    private EntryFileImporterFactory importerFactory;
     private EntryRepository entryRepository;
+    private EntryMapper entryMapper;
 
-    public EntryServiceImpl(EntryRepository entryRepository) {
+    public EntryServiceImpl(CategoryService categoryService, EntryFileImporterFactory importerFactory, EntryRepository entryRepository, EntryMapper entryMapper) {
+        this.categoryService = categoryService;
+        this.importerFactory = importerFactory;
         this.entryRepository = entryRepository;
+        this.entryMapper = entryMapper;
     }
 
     @Override
@@ -48,5 +71,35 @@ public class EntryServiceImpl implements EntryService {
     @Override
     public void delete(UUID entryId, UUID userId) {
         entryRepository.delete(findByIdAndUserId(entryId, userId));
+    }
+
+    @Override
+    public Page<Entry> massInsertUsingImportFile(MultipartFile file, User user, Pageable pageable) {
+        try(InputStream inputStream = file.getInputStream()) {
+            String fileName = extractFileName(file);
+            List<EntryRequest> entryRequests = importFileData(fileName, inputStream);
+            List<Entry> entries = mapToEntries(user, entryRequests);
+            return entryRepository.insertAll(entries);
+        } catch (Exception e) {
+            throw new FileProcessingException("Failed to process the import file. Please check the file format and content");
+        }
+    }
+
+    private static String extractFileName(MultipartFile file) {
+        return Optional.ofNullable(file.getOriginalFilename())
+                .orElseThrow(() -> new FileProcessingException("File name cannot be null"));
+    }
+
+    private List<EntryRequest> importFileData(String fileName, InputStream inputStream) throws Exception {
+        FileImporter<EntryRequest> importer = importerFactory.getImporter(fileName);
+        return importer.importFile(inputStream);
+    }
+
+    private List<Entry> mapToEntries(User user, List<EntryRequest> entryRequests) {
+        return entryRequests.stream().map(entryRequest -> {
+            Category category = categoryService
+                    .findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
+            return entryMapper.toEntry(entryRequest, category, user);
+        }).toList();
     }
 }

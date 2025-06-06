@@ -1,13 +1,13 @@
 package git.matheusoliveira04.api.fintrack.service;
 
 import git.matheusoliveira04.api.fintrack.entity.Entry;
+import git.matheusoliveira04.api.fintrack.entity.User;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -23,4 +23,6 @@ public interface EntryService {
     Entry update(@NotNull Entry entry);
 
     void delete(@NotNull UUID entryId, @NotNull UUID userId);
+
+    Page<Entry> massInsertUsingImportFile(@NotNull MultipartFile file, @NotNull User user, @NotNull Pageable pageable);
 }
