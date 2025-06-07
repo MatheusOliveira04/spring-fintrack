@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Component("csv")
 public class EntryCsvImporter implements FileImporter<EntryRequest> {
 
     @Override
