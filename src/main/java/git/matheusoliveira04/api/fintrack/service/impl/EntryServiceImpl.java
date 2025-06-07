@@ -69,7 +69,7 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public List<Entry> massInsertUsingImportFile(MultipartFile file, User user) {
+    public List<Entry> insertEntriesFromFile(MultipartFile file, User user) {
         try(InputStream inputStream = file.getInputStream()) {
             String fileName = extractFileName(file);
             List<EntryRequest> entryRequests = importFileData(fileName, inputStream);

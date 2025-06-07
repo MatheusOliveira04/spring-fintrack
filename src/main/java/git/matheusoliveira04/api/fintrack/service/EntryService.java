@@ -27,5 +27,5 @@ public interface EntryService {
 
     void delete(@NotNull UUID entryId, @NotNull UUID userId);
 
-    List<Entry> massInsertUsingImportFile(@NotNull MultipartFile file, @NotNull User user);
+    List<Entry> insertEntriesFromFile(@NotNull MultipartFile file, @NotNull User user);
 }

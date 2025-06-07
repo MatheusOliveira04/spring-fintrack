@@ -125,15 +125,15 @@ public class EntryController {
       return ResponseEntity.noContent().build();
     }
 
-     @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping("/massCreation")
-    public ResponseEntity<List<EntryResponse>> massInsert(
+    public ResponseEntity<List<EntryResponse>> insertEntriesFromFile(
             @RequestParam MultipartFile file,
             @RequestHeader("Authorization") String token,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         User user = tokenUtil.getUserByToken(token);
-        List<Entry> entries = entryService.massInsertUsingImportFile(file, user);
+        List<Entry> entries = entryService.insertEntriesFromFile(file, user);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entries, categoryMapper));
     }
 
