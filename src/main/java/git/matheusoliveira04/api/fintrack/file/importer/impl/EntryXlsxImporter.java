@@ -4,7 +4,6 @@ import git.matheusoliveira04.api.fintrack.dto.request.EntryRequest;
 import git.matheusoliveira04.api.fintrack.file.importer.contract.FileImporter;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +21,7 @@ public class EntryXlsxImporter implements FileImporter<EntryRequest> {
     @Override
     public List<EntryRequest> importFile(InputStream inputStream) throws Exception {
         try (XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-
+            Iterator<Row> rowIterator = workbook.getSheetAt(0).iterator();
             if (rowIterator.hasNext()) rowIterator.next();
 
             return parseRowsToEntryRequestList(rowIterator);
@@ -33,7 +30,6 @@ public class EntryXlsxImporter implements FileImporter<EntryRequest> {
 
     private List<EntryRequest> parseRowsToEntryRequestList(Iterator<Row> rowIterator) {
         List<EntryRequest> entryRequests = new ArrayList<>();
-
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             if (isNotEmpty(row)) {

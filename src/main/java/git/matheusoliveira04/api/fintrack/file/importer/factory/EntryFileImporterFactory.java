@@ -5,7 +5,6 @@ import git.matheusoliveira04.api.fintrack.file.exception.FileProcessingException
 import git.matheusoliveira04.api.fintrack.file.importer.contract.FileImporter;
 import git.matheusoliveira04.api.fintrack.file.importer.impl.EntryCsvImporter;
 import git.matheusoliveira04.api.fintrack.file.importer.impl.EntryXlsxImporter;
-import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;

@@ -12,16 +12,11 @@ import git.matheusoliveira04.api.fintrack.repository.EntryRepository;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -74,14 +69,13 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public Page<Entry> massInsertUsingImportFile(MultipartFile file, User user, Pageable pageable) {
+    public List<Entry> massInsertUsingImportFile(MultipartFile file, User user) {
         try(InputStream inputStream = file.getInputStream()) {
             String fileName = extractFileName(file);
             List<EntryRequest> entryRequests = importFileData(fileName, inputStream);
-            List<Entry> entries = mapToEntries(user, entryRequests);
-            return entryRepository.insertAll(entries);
+            return entryRepository.saveAll(mapToEntries(user, entryRequests));
         } catch (Exception e) {
-            throw new FileProcessingException("Failed to process the import file. Please check the file format and content");
+            throw new FileProcessingException("Failed to process the import file. Please check the file format and content: " + e.getMessage());
         }
     }
 
