@@ -10,6 +10,7 @@ import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -25,6 +26,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Validated
 @RestController
@@ -48,7 +51,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
             @RequestBody @Valid CategoryRequest categoryRequest,
-            @RequestHeader("Authorization") String token,
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
             UriComponentsBuilder uriBuilder) {
         Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUserByToken(token));
         Category categoryInserted = categoryService.insert(category);
@@ -62,7 +65,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(
             @PathVariable @NotBlank @ValidUUID String id,
-            @RequestHeader("Authorization") String token) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserByToken(token).getId();
         Category category = categoryService.findByIdAndUserId(UUID.fromString(id), userId);
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(category));
@@ -74,7 +77,7 @@ public class CategoryController {
     public ResponseEntity<CategoryPageResponse> findAllByUser(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
-            @RequestHeader("Authorization") String token) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUserIdByToken(token), page, size);
         List<CategoryResponse> categoryResponseList = categoryMapper.toCategoryResponse(categoryPage.toList());
         CategoryPageResponse categoryPageResponse = categoryPageMapper.toCategoryPageResponse(categoryResponseList, categoryPage);
@@ -87,7 +90,7 @@ public class CategoryController {
     public ResponseEntity<CategoryResponse> update(
             @RequestBody @Valid CategoryRequest categoryRequest,
             @PathVariable @NotBlank @ValidUUID String id,
-            @RequestHeader("Authorization") String token) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUserByToken(token));
         category.setId(UUID.fromString(id));
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.update(category)));
@@ -98,7 +101,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable @NotBlank @ValidUUID String id,
-            @RequestHeader("Authorization") String token
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
     ) {
         UUID categoryId = UUID.fromString(id);
         UUID userId = tokenUtil.getUserIdByToken(token);

@@ -14,6 +14,7 @@ import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -32,6 +33,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Validated
 @RestController
@@ -59,7 +62,7 @@ public class EntryController {
     @PostMapping
     public ResponseEntity<EntryResponse> insert(
             @RequestBody @Valid EntryRequest entryRequest,
-            @RequestHeader("Authorization") String token,
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
             UriComponentsBuilder uriBuilder
     ) {
         User user = tokenUtil.getUserByToken(token);
@@ -78,7 +81,7 @@ public class EntryController {
     public ResponseEntity<EntryPageResponse> findAllByUser(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
-            @RequestHeader("Authorization") String token
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
             ) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         Page<Entry> allByUserId = entryService.findAllByUserId(userId, page, size);
@@ -92,7 +95,7 @@ public class EntryController {
     @GetMapping("/{id}")
     public ResponseEntity<EntryResponse> findByIdAndUser(
             @PathVariable @NotBlank @ValidUUID String id,
-            @RequestHeader("Authorization") String token) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         Entry entryFound = entryService.findByIdAndUserId(UUID.fromString(id), userId);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entryFound, categoryMapper));
@@ -104,7 +107,7 @@ public class EntryController {
     public ResponseEntity<EntryResponse> update(
             @PathVariable @NotBlank @ValidUUID String id,
             @RequestBody @Valid EntryRequest entryRequest,
-            @RequestHeader("Authorization") String token
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
     ) {
         User user = tokenUtil.getUserByToken(token);
         Category category = categoryService.findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
@@ -118,7 +121,7 @@ public class EntryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable @NotBlank @ValidUUID String id,
-            @RequestHeader("Authorization") String token) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         UUID entryId = UUID.fromString(id);
         entryService.delete(entryId, userId);
@@ -127,11 +130,11 @@ public class EntryController {
 
     @Operation(security = {@SecurityRequirement(name = "bearer-key")})
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping("/massCreation")
+    @PostMapping(value = "/massCreation", consumes = "multipart/form-data")
     public ResponseEntity<List<EntryResponse>> insertEntriesFromFile(
             @RequestParam MultipartFile file,
-            @RequestHeader("Authorization") String token,
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+            @RequestHeader(AUTHORIZATION) String token,
+            @Parameter(hidden = true) @PageableDefault(size = 10, page = 0) Pageable pageable) {
         User user = tokenUtil.getUserByToken(token);
         List<Entry> entries = entryService.insertEntriesFromFile(file, user);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entries, categoryMapper));
