@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-@Component("xlsx")
+@Component
 public class EntryXlsxImporter implements FileImporter<EntryRequest> {
 
     @Override
