@@ -18,14 +18,17 @@ public class EntryCsvImporter implements FileImporter<EntryRequest> {
 
     @Override
     public List<EntryRequest> importFile(InputStream inputStream) throws Exception {
-        CSVFormat format = CSVFormat.Builder.create()
+        CSVFormat format = createCsvFormat();
+        return parseCsvParserToEntryRequests(format.parse(new InputStreamReader(inputStream)));
+    }
+
+    private static CSVFormat createCsvFormat() {
+        return CSVFormat.Builder.create()
                 .setHeader()
                 .setSkipHeaderRecord(true)
                 .setIgnoreEmptyLines(true)
                 .setTrim(true)
-                .build();
-
-        return parseCsvParserToEntryRequests(format.parse(new InputStreamReader(inputStream)));
+                .get();
     }
 
     private List<EntryRequest> parseCsvParserToEntryRequests(CSVParser csvParser) {
