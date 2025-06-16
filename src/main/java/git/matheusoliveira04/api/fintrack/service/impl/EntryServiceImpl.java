@@ -5,6 +5,8 @@ import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.file.exception.FileProcessingException;
+import git.matheusoliveira04.api.fintrack.file.exporter.contract.FileExporter;
+import git.matheusoliveira04.api.fintrack.file.exporter.factory.EntryFileExporterFactory;
 import git.matheusoliveira04.api.fintrack.file.importer.contract.FileImporter;
 import git.matheusoliveira04.api.fintrack.file.importer.factory.EntryFileImporterFactory;
 import git.matheusoliveira04.api.fintrack.mapper.EntryMapper;
@@ -12,8 +14,10 @@ import git.matheusoliveira04.api.fintrack.repository.EntryRepository;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,13 +30,20 @@ import java.util.UUID;
 public class EntryServiceImpl implements EntryService {
 
     private CategoryService categoryService;
-    private EntryFileImporterFactory importerFactory;
+    private EntryFileImporterFactory importer;
+    private EntryFileExporterFactory exporter;
     private EntryRepository entryRepository;
     private EntryMapper entryMapper;
 
-    public EntryServiceImpl(CategoryService categoryService, EntryFileImporterFactory importerFactory, EntryRepository entryRepository, EntryMapper entryMapper) {
+    public EntryServiceImpl(
+            CategoryService categoryService,
+            EntryFileImporterFactory importer,
+            EntryFileExporterFactory exporter,
+            EntryRepository entryRepository,
+            EntryMapper entryMapper) {
         this.categoryService = categoryService;
-        this.importerFactory = importerFactory;
+        this.importer = importer;
+        this.exporter = exporter;
         this.entryRepository = entryRepository;
         this.entryMapper = entryMapper;
     }
@@ -73,9 +84,20 @@ public class EntryServiceImpl implements EntryService {
         try(InputStream inputStream = file.getInputStream()) {
             String fileName = extractFileName(file);
             List<EntryRequest> entryRequests = importFileData(fileName, inputStream);
-            return entryRepository.saveAll(mapToEntries(user, entryRequests));
+            return entryRepository.saveAll(mapRequestsToEntries(user, entryRequests));
         } catch (Exception e) {
             throw new FileProcessingException("Failed to process the import file. Please check the file format and content: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Resource exportData(UUID userId, Pageable pageable, String acceptHeader) {
+        var entries = findAllByUserId(userId, pageable.getPageNumber(), pageable.getPageSize());
+        try {
+            FileExporter<Entry> exporter = resolveExporter(acceptHeader);
+            return exportEntries(entries.toList(), exporter);
+        } catch (Exception e) {
+            throw new FileProcessingException("Failed exporting file: invalid format or processing error.");
         }
     }
 
@@ -85,15 +107,23 @@ public class EntryServiceImpl implements EntryService {
     }
 
     private List<EntryRequest> importFileData(String fileName, InputStream inputStream) throws Exception {
-        FileImporter<EntryRequest> importer = importerFactory.getImporter(fileName);
+        FileImporter<EntryRequest> importer = this.importer.getImporter(fileName);
         return importer.importFile(inputStream);
     }
 
-    private List<Entry> mapToEntries(User user, List<EntryRequest> entryRequests) {
+    private List<Entry> mapRequestsToEntries(User user, List<EntryRequest> entryRequests) {
         return entryRequests.stream().map(entryRequest -> {
             Category category = categoryService
                     .findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
             return entryMapper.toEntry(entryRequest, category, user);
         }).toList();
+    }
+
+    private FileExporter<Entry> resolveExporter(String acceptHeader) {
+        return this.exporter.getExporter(acceptHeader);
+    }
+
+    private Resource exportEntries(List<Entry> entries, FileExporter<Entry> exporter) throws Exception {
+        return exporter.exportFile(entries);
     }
 }
