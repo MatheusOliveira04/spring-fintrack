@@ -16,14 +16,16 @@ import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -31,10 +33,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static git.matheusoliveira04.api.fintrack.file.exporter.MediaTypes.APPLICATION_XLSX;
+import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 
 @Validated
 @RestController
@@ -133,11 +140,37 @@ public class EntryController {
     @PostMapping(value = "/massCreation", consumes = "multipart/form-data")
     public ResponseEntity<List<EntryResponse>> insertEntriesFromFile(
             @RequestParam MultipartFile file,
-            @RequestHeader(AUTHORIZATION) String token,
-            @Parameter(hidden = true) @PageableDefault(size = 10, page = 0) Pageable pageable) {
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         User user = tokenUtil.getUserByToken(token);
         List<Entry> entries = entryService.insertEntriesFromFile(file, user);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entries, categoryMapper));
     }
+
+    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @PreAuthorize("hasRole('BASIC')")
+    @GetMapping("/export")
+    public ResponseEntity<Resource> exportFileData(
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive @Max(value = 100) int size,
+            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
+            HttpServletRequest request
+    ) {
+        var userId = tokenUtil.getUserIdByToken(token);
+
+        String acceptHeader = request.getHeader(ACCEPT);
+        Resource file = entryService.exportData(userId, PageRequest.of(page, size), acceptHeader);
+
+        var contentType = Optional.ofNullable(acceptHeader).orElse("application/octet-stream");
+        var fileExtension = APPLICATION_XLSX.equalsIgnoreCase(acceptHeader) ? ".xlsx" : ".csv";
+        var fileName = "entries_exported_" + LocalDateTime.now() + fileExtension;
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(file);
+    }
+
+
+
 
 }
