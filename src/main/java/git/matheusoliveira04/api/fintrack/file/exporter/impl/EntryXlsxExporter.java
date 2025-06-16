@@ -1,28 +1,25 @@
 package git.matheusoliveira04.api.fintrack.file.exporter.impl;
 
-import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
+import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.file.exporter.contract.FileExporter;
-import jakarta.validation.constraints.NotNull;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.stream.IntStream;
 
-@Validated
 @Component
-public class EntryXlsxExporter implements FileExporter<EntryResponse> {
+public class EntryXlsxExporter implements FileExporter<Entry> {
 
     private static final String SHEET_NAME = "Entries";
     private static final String[] HEADERS = {"description", "value", "date", "paid", "category_id"};
 
     @Override
-    public Resource exportFile(@NotNull List<EntryResponse> list) throws Exception {
+    public Resource exportFile(List<Entry> list) throws Exception {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet(SHEET_NAME);
 
@@ -47,14 +44,14 @@ public class EntryXlsxExporter implements FileExporter<EntryResponse> {
         });
     }
 
-    private static void populateDataRows(Sheet sheet, List<EntryResponse> entries) {
+    private static void populateDataRows(Sheet sheet, List<Entry> entries) {
         IntStream.range(0, entries.size()).forEach(index -> {
-            Row row = sheet.createRow(index);
+            Row row = sheet.createRow(index + 1);
             row.createCell(0).setCellValue(entries.get(index).getDescription());
             row.createCell(1).setCellValue(entries.get(index).getValue().doubleValue());
             row.createCell(2).setCellValue(entries.get(index).getDate());
             row.createCell(3).setCellValue(entries.get(index).getPaid());
-            row.createCell(4).setCellValue(entries.get(index).getCategory().getId());
+            row.createCell(4).setCellValue(entries.get(index).getCategory().getId().toString());
         });
     }
 

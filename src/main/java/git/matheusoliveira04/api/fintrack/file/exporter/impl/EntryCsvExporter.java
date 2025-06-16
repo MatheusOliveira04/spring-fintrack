@@ -1,6 +1,6 @@
 package git.matheusoliveira04.api.fintrack.file.exporter.impl;
 
-import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
+import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.file.exporter.contract.FileExporter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -15,12 +15,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-public class EntryCsvExporter implements FileExporter<EntryResponse> {
+public class EntryCsvExporter implements FileExporter<Entry> {
 
     private static final String[] HEADERS = {"description", "value", "date", "paid", "category_id"};
 
     @Override
-    public Resource exportFile(List<EntryResponse> list) throws Exception {
+    public Resource exportFile(List<Entry> list) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OutputStreamWriter write = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
         CSVFormat csvFormat = createCsvFormat();
@@ -36,9 +36,9 @@ public class EntryCsvExporter implements FileExporter<EntryResponse> {
                 .get();
     }
 
-    private static void writeCsv(List<EntryResponse> list, OutputStreamWriter write, CSVFormat csvFormat) throws IOException {
+    private static void writeCsv(List<Entry> list, OutputStreamWriter write, CSVFormat csvFormat) throws IOException {
         try(CSVPrinter csvPrinter = new CSVPrinter(write, csvFormat)) {
-            for (EntryResponse entry: list) {
+            for (Entry entry: list) {
                 csvPrinter.printRecord(
                         entry.getDescription(),
                         entry.getValue(),

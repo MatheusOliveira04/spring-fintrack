@@ -1,6 +1,6 @@
 package git.matheusoliveira04.api.fintrack.file.exporter.factory;
 
-import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
+import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.file.exception.FileProcessingException;
 import git.matheusoliveira04.api.fintrack.file.exporter.contract.FileExporter;
 import git.matheusoliveira04.api.fintrack.file.exporter.impl.EntryCsvExporter;
@@ -21,7 +21,7 @@ import static git.matheusoliveira04.api.fintrack.file.exporter.MediaTypes.TEXT_C
 public class EntryFileExporterFactory {
 
     private final Logger logger = LoggerFactory.getLogger(EntryFileExporterFactory.class);
-    private final Map<String, FileExporter<EntryResponse>> fileExporterMap = new HashMap<>();
+    private final Map<String, FileExporter<Entry>> fileExporterMap = new HashMap<>();
 
     public EntryFileExporterFactory(ApplicationContext context) {
         registerExporters(context);
@@ -32,8 +32,8 @@ public class EntryFileExporterFactory {
         fileExporterMap.put(TEXT_CSV, context.getBean(EntryCsvExporter.class));
     }
 
-    public FileExporter<EntryResponse> getExporter(String acceptHeader) {
-        var fileExporter = fileExporterMap.get(acceptHeader);
+    public FileExporter<Entry> getExporter(String acceptHeader) {
+        FileExporter<Entry> fileExporter = fileExporterMap.get(acceptHeader);
         if (Objects.isNull(fileExporter)) {
             logger.error("Invalid File Format");
             throw new FileProcessingException("Invalid File Format");
