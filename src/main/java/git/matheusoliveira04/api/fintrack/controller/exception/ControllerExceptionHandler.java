@@ -1,5 +1,6 @@
 package git.matheusoliveira04.api.fintrack.controller.exception;
 
+import git.matheusoliveira04.api.fintrack.file.exception.FileProcessingException;
 import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import git.matheusoliveira04.api.fintrack.service.exception.UsernameNotFoundException;
@@ -41,6 +42,14 @@ public class ControllerExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new StandardError(LocalDateTime.now(), HttpStatus.CONFLICT.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage())));
+    }
+
+    @ExceptionHandler(FileProcessingException.class)
+    public ResponseEntity<StandardError> getFileProcessingException(FileProcessingException exception, HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage())));
+
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
