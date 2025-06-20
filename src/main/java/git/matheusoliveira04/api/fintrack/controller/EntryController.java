@@ -1,5 +1,6 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
+import git.matheusoliveira04.api.fintrack.controller.docs.EntryControllerDocs;
 import git.matheusoliveira04.api.fintrack.dto.request.EntryRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.EntryPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
@@ -13,9 +14,6 @@ import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -39,14 +37,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static git.matheusoliveira04.api.fintrack.file.exporter.MediaTypes.APPLICATION_XLSX;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+import static org.springframework.http.HttpHeaders.*;
 
 @Validated
 @RestController
 @RequestMapping("/api/v1/entry")
-public class EntryController {
+public class EntryController implements EntryControllerDocs {
 
     private CategoryService categoryService;
     private CategoryMapper categoryMapper;
@@ -64,12 +60,12 @@ public class EntryController {
         this.tokenUtil = tokenUtil;
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
     public ResponseEntity<EntryResponse> insert(
             @RequestBody @Valid EntryRequest entryRequest,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
+            @RequestHeader(AUTHORIZATION) String token,
             UriComponentsBuilder uriBuilder
     ) {
         User user = tokenUtil.getUserByToken(token);
@@ -82,13 +78,13 @@ public class EntryController {
                 .body(entryMapper.toEntryResponse(entryInserted, categoryMapper));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
     public ResponseEntity<EntryPageResponse> findAllByUser(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
+            @RequestHeader(AUTHORIZATION) String token
             ) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         Page<Entry> allByUserId = entryService.findAllByUserId(userId, page, size);
@@ -97,24 +93,24 @@ public class EntryController {
         return ResponseEntity.ok(entryPageMapper.toEntryPageResponse(entryResponse, allByUserId));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
     public ResponseEntity<EntryResponse> findByIdAndUser(
             @PathVariable @NotBlank @ValidUUID String id,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         Entry entryFound = entryService.findByIdAndUserId(UUID.fromString(id), userId);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entryFound, categoryMapper));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping("/{id}")
     public ResponseEntity<EntryResponse> update(
             @PathVariable @NotBlank @ValidUUID String id,
             @RequestBody @Valid EntryRequest entryRequest,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
+            @RequestHeader(AUTHORIZATION) String token
     ) {
         User user = tokenUtil.getUserByToken(token);
         Category category = categoryService.findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
@@ -123,36 +119,36 @@ public class EntryController {
         return ResponseEntity.ok(entryMapper.toEntryResponse(entryService.update(entry), categoryMapper));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable @NotBlank @ValidUUID String id,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserIdByToken(token);
         UUID entryId = UUID.fromString(id);
         entryService.delete(entryId, userId);
       return ResponseEntity.noContent().build();
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping(value = "/importFile", consumes = "multipart/form-data")
     public ResponseEntity<List<EntryResponse>> importFile(
             @RequestParam MultipartFile file,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         User user = tokenUtil.getUserByToken(token);
         List<Entry> entries = entryService.importFile(file, user);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entries, categoryMapper));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "bearer-key")})
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/export")
     public ResponseEntity<Resource> exportFileData(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(value = 100) int size,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
+            @RequestHeader(AUTHORIZATION) String token,
             HttpServletRequest request
     ) {
         var userId = tokenUtil.getUserIdByToken(token);
