@@ -137,12 +137,12 @@ public class EntryController {
 
     @Operation(security = {@SecurityRequirement(name = "bearer-key")})
     @PreAuthorize("hasRole('BASIC')")
-    @PostMapping(value = "/massCreation", consumes = "multipart/form-data")
-    public ResponseEntity<List<EntryResponse>> insertEntriesFromFile(
+    @PostMapping(value = "/importFile", consumes = "multipart/form-data")
+    public ResponseEntity<List<EntryResponse>> importFile(
             @RequestParam MultipartFile file,
             @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
         User user = tokenUtil.getUserByToken(token);
-        List<Entry> entries = entryService.insertEntriesFromFile(file, user);
+        List<Entry> entries = entryService.importFile(file, user);
         return ResponseEntity.ok(entryMapper.toEntryResponse(entries, categoryMapper));
     }
 

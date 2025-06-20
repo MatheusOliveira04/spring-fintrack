@@ -80,11 +80,10 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public List<Entry> insertEntriesFromFile(MultipartFile file, User user) {
+    public List<Entry> importFile(MultipartFile file, User user) {
         try(InputStream inputStream = file.getInputStream()) {
-            String fileName = extractFileName(file);
-            List<EntryRequest> entryRequests = importFileData(fileName, inputStream);
-            return entryRepository.saveAll(mapRequestsToEntries(user, entryRequests));
+            List<EntryRequest> entryRequests = importFileData(extractFileName(file), inputStream);
+            return entryRepository.saveAll(requestsToEntries(user, entryRequests));
         } catch (Exception e) {
             throw new FileProcessingException("Failed to process the import file. Please check the file format and content: " + e.getMessage());
         }
@@ -92,16 +91,15 @@ public class EntryServiceImpl implements EntryService {
 
     @Override
     public Resource exportData(UUID userId, Pageable pageable, String acceptHeader) {
-        var entries = findAllByUserId(userId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Entry> entries = findAllByUserId(userId, pageable.getPageNumber(), pageable.getPageSize());
         try {
-            FileExporter<Entry> exporter = resolveExporter(acceptHeader);
-            return exportEntries(entries.toList(), exporter);
+            return exportFileData(acceptHeader, entries.toList());
         } catch (Exception e) {
             throw new FileProcessingException("Failed exporting file: invalid format or processing error.");
         }
     }
 
-    private static String extractFileName(MultipartFile file) {
+    private String extractFileName(MultipartFile file) {
         return Optional.ofNullable(file.getOriginalFilename())
                 .orElseThrow(() -> new FileProcessingException("File name cannot be null"));
     }
@@ -111,7 +109,7 @@ public class EntryServiceImpl implements EntryService {
         return importer.importFile(inputStream);
     }
 
-    private List<Entry> mapRequestsToEntries(User user, List<EntryRequest> entryRequests) {
+    private List<Entry> requestsToEntries(User user, List<EntryRequest> entryRequests) {
         return entryRequests.stream().map(entryRequest -> {
             Category category = categoryService
                     .findByIdAndUserId(UUID.fromString(entryRequest.getCategoryId()), user.getId());
@@ -119,11 +117,8 @@ public class EntryServiceImpl implements EntryService {
         }).toList();
     }
 
-    private FileExporter<Entry> resolveExporter(String acceptHeader) {
-        return this.exporter.getExporter(acceptHeader);
-    }
-
-    private Resource exportEntries(List<Entry> entries, FileExporter<Entry> exporter) throws Exception {
+    private Resource exportFileData(String acceptHeader, List<Entry> entries) throws Exception {
+        FileExporter<Entry> exporter = this.exporter.getExporter(acceptHeader);
         return exporter.exportFile(entries);
     }
 }

@@ -26,7 +26,7 @@ public interface EntryService {
 
     void delete(@NotNull UUID entryId, @NotNull UUID userId);
 
-    List<Entry> insertEntriesFromFile(@NotNull MultipartFile file, @NotNull User user);
+    List<Entry> importFile(@NotNull MultipartFile file, @NotNull User user);
 
     Resource exportData(@NotNull UUID userId, @NotNull Pageable pageable, @NotBlank String acceptHeader);
 }
