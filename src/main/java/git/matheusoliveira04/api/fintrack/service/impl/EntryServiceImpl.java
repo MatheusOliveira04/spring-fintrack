@@ -54,8 +54,8 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public Page<Entry> findAllByUserId(UUID userId, int page, int size) {
-        Page<Entry> entries = entryRepository.findAllByUserId(userId, PageRequest.of(page, size));
+    public Page<Entry> findAllByUserId(UUID userId, Pageable pageable) {
+        Page<Entry> entries = entryRepository.findAllByUserId(userId, pageable);
         if (entries.isEmpty()) {
             throw new ObjectNotFoundException("No user entries found!");
         }
@@ -91,7 +91,7 @@ public class EntryServiceImpl implements EntryService {
 
     @Override
     public Resource exportData(UUID userId, Pageable pageable, String acceptHeader) {
-        Page<Entry> entries = findAllByUserId(userId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Entry> entries = findAllByUserId(userId, pageable);
         try {
             return exportFileData(acceptHeader, entries.toList());
         } catch (Exception e) {
