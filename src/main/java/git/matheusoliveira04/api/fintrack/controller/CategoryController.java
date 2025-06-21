@@ -1,5 +1,6 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
+import git.matheusoliveira04.api.fintrack.controller.docs.CategoryControllerDocs;
 import git.matheusoliveira04.api.fintrack.dto.request.CategoryRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryPageResponse;
 import git.matheusoliveira04.api.fintrack.dto.response.CategoryResponse;
@@ -32,7 +33,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Validated
 @RestController
 @RequestMapping("/api/v1/category")
-public class CategoryController {
+public class CategoryController implements CategoryControllerDocs {
 
     private CategoryMapper categoryMapper;
     private CategoryPageMapper categoryPageMapper;
@@ -46,12 +47,12 @@ public class CategoryController {
         this.tokenUtil = tokenUtil;
     }
 
-    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @PostMapping
     public ResponseEntity<CategoryResponse> insert(
             @RequestBody @Valid CategoryRequest categoryRequest,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token,
+            @RequestHeader(AUTHORIZATION) String token,
             UriComponentsBuilder uriBuilder) {
         Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUserByToken(token));
         Category categoryInserted = categoryService.insert(category);
@@ -60,48 +61,48 @@ public class CategoryController {
                 .body(categoryMapper.toCategoryResponse(categoryInserted));
     }
 
-    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(
             @PathVariable @NotBlank @ValidUUID String id,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         UUID userId = tokenUtil.getUserByToken(token).getId();
         Category category = categoryService.findByIdAndUserId(UUID.fromString(id), userId);
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(category));
     }
 
-    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
     public ResponseEntity<CategoryPageResponse> findAllByUser(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUserIdByToken(token), page, size);
         List<CategoryResponse> categoryResponseList = categoryMapper.toCategoryResponse(categoryPage.toList());
         CategoryPageResponse categoryPageResponse = categoryPageMapper.toCategoryPageResponse(categoryResponseList, categoryPage);
         return ResponseEntity.ok(categoryPageResponse);
     }
 
-    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(
             @RequestBody @Valid CategoryRequest categoryRequest,
             @PathVariable @NotBlank @ValidUUID String id,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token) {
+            @RequestHeader(AUTHORIZATION) String token) {
         Category category = categoryMapper.toCategory(categoryRequest, tokenUtil.getUserByToken(token));
         category.setId(UUID.fromString(id));
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(categoryService.update(category)));
     }
 
-    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @Override
     @PreAuthorize("hasRole('BASIC')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable @NotBlank @ValidUUID String id,
-            @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
+            @RequestHeader(AUTHORIZATION) String token
     ) {
         UUID categoryId = UUID.fromString(id);
         UUID userId = tokenUtil.getUserIdByToken(token);
