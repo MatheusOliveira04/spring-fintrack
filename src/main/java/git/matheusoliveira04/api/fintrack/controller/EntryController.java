@@ -23,6 +23,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -82,12 +84,11 @@ public class EntryController implements EntryControllerDocs {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
     public ResponseEntity<EntryPageResponse> findAllByUser(
-            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
-            @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
+            @PageableDefault(size = 10, page = 0, sort = "description") Pageable pageable,
             @RequestHeader(AUTHORIZATION) String token
             ) {
         UUID userId = tokenUtil.getUserIdByToken(token);
-        Page<Entry> allByUserId = entryService.findAllByUserId(userId, page, size);
+        Page<Entry> allByUserId = entryService.findAllByUserId(userId, pageable);
         List<EntryResponse> entryResponse = entryMapper.toEntryResponse(allByUserId.toList(), categoryMapper);
 
         return ResponseEntity.ok(entryPageMapper.toEntryPageResponse(entryResponse, allByUserId));
@@ -165,8 +166,4 @@ public class EntryController implements EntryControllerDocs {
                 .header(CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                 .body(file);
     }
-
-
-
-
 }
