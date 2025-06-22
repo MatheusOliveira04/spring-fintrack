@@ -4,6 +4,7 @@ import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
+import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class UserServiceImplTest {
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<String> emailArgumentCaptor;
+
     @Nested
     class insert {
 
@@ -68,6 +72,32 @@ class UserServiceImplTest {
             verify(repository, times(1)).save(any());
         }
 
+        @Test
+        @DisplayName("Should throw exception when email is not unique")
+        void shouldThrowsExceptionWhenEmailAlreadyExistsInOtherUser() {
+            var user = mockUser();
+            var encodedPassword = "encodedPassword123";
+            var messageException = "Email already exists!";
+
+            var otherUser = User.builder()
+                    .id(UUID.randomUUID())
+                    .name("other")
+                    .email(user.getEmail())
+                    .password("123456")
+                    .roles(new HashSet<>())
+                    .build();
+            otherUser.addRole(new Role(1L, RoleName.BASIC, Set.of(otherUser)));
+
+            doReturn(encodedPassword).when(passwordEncoder).encode(user.getPassword());
+            doReturn(Optional.of(otherUser)).when(repository).findByEmail(emailArgumentCaptor.capture());
+
+            var exception = assertThrows(IntegrityViolationException.class, () -> service.insert(user));
+            assertEquals(messageException, exception.getMessage());
+
+            verify(passwordEncoder, times(1)).encode(any());
+            verify(repository, times(1)).findByEmail(any());
+            verify(repository, times(0)).save(any());
+        }
     }
 
     User mockUser() {
