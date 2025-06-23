@@ -11,10 +11,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Validated
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -71,7 +73,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ObjectNotFoundException("User not found with email: " + email));
     }
 
-    private void checkEmailIsUnique(User user) {
+    private void checkEmailIsUnique(@NotNull User user) {
         Optional<User> userFound = userRepository.findByEmail(user.getEmail());
         if (userFound.isPresent() && user.getId() != userFound.get().getId()) {
             throw new IntegrityViolationException("Email already exists!");
@@ -79,6 +81,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void setPasswordWithEncoder(@NotNull User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Optional.ofNullable(user.getPassword())
+                .map(passwordEncoder::encode)
+                .ifPresent(user::setPassword);
     }
 }

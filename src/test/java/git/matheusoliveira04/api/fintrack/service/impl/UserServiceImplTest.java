@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
+import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,13 +17,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -41,6 +42,9 @@ class UserServiceImplTest {
 
     @Captor
     private ArgumentCaptor<String> emailArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<UUID> uuidArgumentCaptor;
 
     @Nested
     class insert {
@@ -66,14 +70,13 @@ class UserServiceImplTest {
             assertEquals(user.getEmail(), userCaptured.getEmail());
             assertEquals(encodedPassword, userCaptured.getPassword());
             assertEquals(user.getRoles().size(), userArgumentCaptor.getValue().getRoles().size());
-
             verify(passwordEncoder, times(1)).encode(any());
             verify(repository, times(1)).findByEmail(user.getEmail());
             verify(repository, times(1)).save(any());
         }
 
         @Test
-        @DisplayName("Should throw exception when email is not unique")
+        @DisplayName("Should throws IntegrityViolationException when email is not unique")
         void shouldThrowsExceptionWhenEmailAlreadyExistsInOtherUser() {
             var user = mockUser();
             var encodedPassword = "encodedPassword123";
@@ -92,12 +95,47 @@ class UserServiceImplTest {
             doReturn(Optional.of(otherUser)).when(repository).findByEmail(emailArgumentCaptor.capture());
 
             var exception = assertThrows(IntegrityViolationException.class, () -> service.insert(user));
+            assertNotNull(exception);
             assertEquals(messageException, exception.getMessage());
 
             verify(passwordEncoder, times(1)).encode(any());
             verify(repository, times(1)).findByEmail(any());
             verify(repository, times(0)).save(any());
         }
+    }
+
+    @Nested
+    class findById {
+
+        @Test
+        @DisplayName("Should find by id a user with success")
+        void shouldFindByIdWithSuccess() {
+            var user = mockUser();
+
+            doReturn(Optional.of(user)).when(repository).findById(uuidArgumentCaptor.capture());
+
+            var output = service.findById(user.getId());
+
+            assertNotNull(output);
+            assertEquals(user, output);
+            assertEquals(user.getId(), uuidArgumentCaptor.getValue());
+            verify(repository, times(1)).findById(any());
+        }
+
+        @Test
+        @DisplayName("should throws ObjectNotFoundException when not found user by id")
+        void shouldThrowsObjectNotFoundExceptionWhenNotFoundUserById() {
+            var user = mockUser();
+            var messageException = "User not found with id: " + user.getId();
+
+            doReturn(Optional.empty()).when(repository).findById(uuidArgumentCaptor.capture());
+
+            var exception = assertThrows(ObjectNotFoundException.class, () -> service.findById(user.getId()));
+            assertNotNull(exception);
+            assertEquals(messageException, exception.getMessage());
+            verify(repository, times(1)).findById(any());
+        }
+
     }
 
     User mockUser() {
