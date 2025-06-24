@@ -45,7 +45,7 @@ class UserServiceImplTest {
     private ArgumentCaptor<String> stringCaptor;
 
     @Captor
-    private ArgumentCaptor<UUID> uuidArgumentCaptor;
+    private ArgumentCaptor<UUID> idCaptor;
 
     @Nested
     class insert {
@@ -149,14 +149,31 @@ class UserServiceImplTest {
         void shouldFindByIdWithSuccess() {
             var user = mockUser();
 
-            doReturn(Optional.of(user)).when(repository).findById(uuidArgumentCaptor.capture());
+            doReturn(Optional.of(user)).when(repository).findById(any());
 
-            var output = service.findById(user.getId());
+            var userOutput = service.findById(user.getId());
 
-            assertNotNull(output);
-            assertEquals(user, output);
-            assertEquals(user.getId(), uuidArgumentCaptor.getValue());
+            assertNotNull(userOutput);
+            assertEquals(user, userOutput);
+            assertEquals(user.getId(), userOutput.getId());
+            assertEquals(user.getName(), userOutput.getName());
+            assertEquals(user.getEmail(), userOutput.getEmail());
+            assertEquals(user.getPassword(), userOutput.getPassword());
+            assertEquals(user.getRoles().size(), userOutput.getRoles().size());
+
             verify(repository, times(1)).findById(any());
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to findById")
+        void shouldPassCorrectParametersWhenFindingUserByIdWithSuccess() {
+            var user = mockUser();
+
+            doReturn(Optional.of(user)).when(repository).findById(idCaptor.capture());
+
+            service.findById(user.getId());
+
+            assertEquals(user.getId(), idCaptor.getValue());
         }
 
         @Test
@@ -165,7 +182,7 @@ class UserServiceImplTest {
             var user = mockUser();
             var messageException = "User not found with id: " + user.getId();
 
-            doReturn(Optional.empty()).when(repository).findById(uuidArgumentCaptor.capture());
+            doReturn(Optional.empty()).when(repository).findById(idCaptor.capture());
 
             var exception = assertThrows(ObjectNotFoundException.class, () -> service.findById(user.getId()));
             assertNotNull(exception);
