@@ -7,7 +7,7 @@ import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationEx
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +44,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> findAll(int page, int size) {
-        Page<User> usersFound = userRepository.findAll(PageRequest.of(page, size));
+    public Page<User> findAll(Pageable pageable) {
+        Page<User> usersFound = userRepository.findAll(pageable);
         if (usersFound.isEmpty()) {
             throw new ObjectNotFoundException("No user found!");
         }

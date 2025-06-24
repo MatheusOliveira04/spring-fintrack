@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -68,7 +69,7 @@ public class UserController {
     public ResponseEntity<UserPageResponse> findAll(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size) {
-        Page<User> users = userService.findAll(page, size);
+        Page<User> users = userService.findAll(PageRequest.of(page, size));
         List<UserResponse> usersResponse = userMapper.toUserResponses(users.toList());
         UserPageResponse userPageResponse = userPageMapper.toUserPageResponse(usersResponse, users);
         return ResponseEntity.ok(userPageResponse);
