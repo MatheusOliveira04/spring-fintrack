@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,10 +39,10 @@ class UserServiceImplTest {
     private UserServiceImpl service;
 
     @Captor
-    private ArgumentCaptor<User> userArgumentCaptor;
+    private ArgumentCaptor<User> userCaptor;
 
     @Captor
-    private ArgumentCaptor<String> emailArgumentCaptor;
+    private ArgumentCaptor<String> stringCaptor;
 
     @Captor
     private ArgumentCaptor<UUID> uuidArgumentCaptor;
@@ -55,50 +56,86 @@ class UserServiceImplTest {
             var user = mockUser();
             var encodedPassword = "encodedPassword123";
 
-            doReturn(encodedPassword).when(passwordEncoder).encode(user.getPassword());
-            doReturn(Optional.empty()).when(repository).findByEmail(user.getEmail());
-            doReturn(user).when(repository).save(userArgumentCaptor.capture());
+            doReturn(encodedPassword).when(passwordEncoder).encode(any());
+            doReturn(Optional.empty()).when(repository).findByEmail(any());
+            doReturn(user).when(repository).save(any());
 
-            var output = service.insert(user);
+            var userOutput = service.insert(user);
 
-            assertNotNull(output);
-            assertEquals(user, output);
+            assertNotNull(userOutput);
+            assertEquals(user, userOutput);
+            assertEquals(user.getId(), userOutput.getId());
+            assertEquals(user.getName(), userOutput.getName());
+            assertEquals(user.getEmail(), userOutput.getEmail());
+            assertEquals(user.getPassword(), userOutput.getPassword());
+            assertEquals(user.getRoles().size(), userOutput.getRoles().size());
 
-            var userCaptured = userArgumentCaptor.getValue();
-            assertEquals(user.getId(), userCaptured.getId());
-            assertEquals(user.getName(), userCaptured.getName());
-            assertEquals(user.getEmail(), userCaptured.getEmail());
-            assertEquals(encodedPassword, userCaptured.getPassword());
-            assertEquals(user.getRoles().size(), userArgumentCaptor.getValue().getRoles().size());
             verify(passwordEncoder, times(1)).encode(any());
-            verify(repository, times(1)).findByEmail(user.getEmail());
+            verify(repository, times(1)).findByEmail(any());
             verify(repository, times(1)).save(any());
         }
 
         @Test
-        @DisplayName("Should throws IntegrityViolationException when email is not unique")
-        void shouldThrowsExceptionWhenEmailAlreadyExistsInOtherUser() {
+        @DisplayName("Should pass correct parameters to encoder, findByEmail and save")
+        void shouldPassCorrectParametersWhenInsertingUserWithSuccess() {
             var user = mockUser();
+            var originalUserPassword = user.getPassword();
             var encodedPassword = "encodedPassword123";
-            var messageException = "Email already exists!";
 
+            doReturn(encodedPassword).when(passwordEncoder).encode(stringCaptor.capture());
+            doReturn(Optional.empty()).when(repository).findByEmail(stringCaptor.capture());
+            doReturn(user).when(repository).save(userCaptor.capture());
+
+            service.insert(user);
+
+            var valuesCaptured = stringCaptor.getAllValues();
+            assertEquals(originalUserPassword, valuesCaptured.get(0));
+            assertEquals(user.getEmail(), valuesCaptured.get(1));
+
+            var userCaptured = userCaptor.getValue();
+            assertEquals(user, userCaptured);
+            assertEquals(user.getId(), userCaptured.getId());
+            assertEquals(user.getName(), userCaptured.getName());
+            assertEquals(user.getEmail(), userCaptured.getEmail());
+            assertEquals(user.getPassword(), userCaptured.getPassword());
+            assertEquals(user.getRoles().size(), userCaptured.getRoles().size());
+        }
+
+        @Test
+        @DisplayName("should set password with password encoder before inserting user")
+        void shouldSetPasswordWithEncoderBeforeInserting() {
+            var user = mockUser();
+            var originalUserPassword = user.getPassword();
+            var encodedPassword = "encodedPassword123";
+
+            doReturn(encodedPassword).when(passwordEncoder).encode(any());
+            doReturn(Optional.empty()).when(repository).findByEmail(any());
+            doReturn(user).when(repository).save(any());
+
+            var userOutput = service.insert(user);
+
+            assertEquals(encodedPassword, userOutput.getPassword());
+            verify(passwordEncoder, times(1)).encode(originalUserPassword);
+        }
+
+        @Test
+        @DisplayName("Should throw exception if email already exists")
+        void shouldThrowExceptionWhenEmailExists() {
+            var user = mockUser();
             var otherUser = User.builder()
                     .id(UUID.randomUUID())
-                    .name("other")
-                    .email(user.getEmail())
-                    .password("123456")
+                    .name("test1")
+                    .email("test1@gmail.com")
+                    .password("123")
                     .roles(new HashSet<>())
                     .build();
-            otherUser.addRole(new Role(1L, RoleName.BASIC, Set.of(otherUser)));
 
-            doReturn(encodedPassword).when(passwordEncoder).encode(user.getPassword());
-            doReturn(Optional.of(otherUser)).when(repository).findByEmail(emailArgumentCaptor.capture());
+            doReturn(Optional.of(otherUser)).when(repository).findByEmail(any());
 
             var exception = assertThrows(IntegrityViolationException.class, () -> service.insert(user));
             assertNotNull(exception);
-            assertEquals(messageException, exception.getMessage());
+            assertEquals("Email already exists!", exception.getMessage());
 
-            verify(passwordEncoder, times(1)).encode(any());
             verify(repository, times(1)).findByEmail(any());
             verify(repository, times(0)).save(any());
         }
