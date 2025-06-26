@@ -14,9 +14,13 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +48,9 @@ class UserServiceImplTest {
 
     @Captor
     private ArgumentCaptor<UUID> idCaptor;
+
+    @Captor
+    private ArgumentCaptor<Pageable> pageableCaptor;
 
     @Nested
     class insert {
@@ -175,7 +182,7 @@ class UserServiceImplTest {
         }
 
         @Test
-        @DisplayName("should throws ObjectNotFoundException when not found user by id")
+        @DisplayName("Should throws ObjectNotFoundException when not found user by id")
         void shouldThrowsObjectNotFoundExceptionWhenNotFoundUserById() {
             var user = UserFactory.build();
             var messageException = "User not found with id: " + user.getId();
@@ -186,6 +193,51 @@ class UserServiceImplTest {
             assertNotNull(exception);
             assertEquals(messageException, exception.getMessage());
             verify(repository, times(1)).findById(any());
+        }
+    }
+
+    @Nested
+    class findAll {
+
+        @Test
+        @DisplayName("should find all users with success")
+        void shouldFindAllUsersWithSuccess() {
+            var pageUser = new PageImpl<>(UserFactory.userListBuild());
+            var page = PageRequest.of(0, 10);
+
+            doReturn(pageUser).when(repository).findAll(any(Pageable.class));
+
+            var listUser = service.findAll(page);
+
+            assertEquals(pageUser.getSize(), listUser.getSize());
+            assertEquals(pageUser.toList().get(0), listUser.toList().get(0));
+            assertEquals(pageUser.toList().get(1), listUser.toList().get(1));
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to findAll method")
+        void shouldPassCorrectParametersWhenFindingAllUsersWithSuccess() {
+            var pageUser = new PageImpl<>(UserFactory.userListBuild());
+            var page = PageRequest.of(0, 10);
+
+            doReturn(pageUser).when(repository).findAll(pageableCaptor.capture());
+
+            service.findAll(page);
+
+            assertEquals(page, pageableCaptor.getValue());
+            assertEquals(page.getPageSize(), pageableCaptor.getValue().getPageSize());
+            assertEquals(page.getPageNumber(), pageableCaptor.getValue().getPageNumber());
+        }
+
+        @Test
+        @DisplayName("Should throws ObjectNotFoundException when not found user")
+        void shouldThrowsObjectNotFoundExceptionWhenNotFoundUser() {
+            var page = PageRequest.of(0, 10);
+            doReturn(new PageImpl<>(List.of())).when(repository).findAll(any(Pageable.class));
+
+            var exception = assertThrows(ObjectNotFoundException.class, () -> service.findAll(page));
+            assertNotNull(exception);
+            assertEquals("No user found!", exception.getMessage());
         }
     }
 

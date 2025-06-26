@@ -5,6 +5,7 @@ import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,5 +23,16 @@ public class UserFactory {
         var role = new Role(1L, RoleName.BASIC, Set.of(user));
         user.addRole(role);
         return user;
+    }
+
+    public static List<User> userListBuild() {
+        var user = User.builder()
+                .id(UUID.randomUUID())
+                .name("test2")
+                .email("test2@gmail.com")
+                .password("123")
+                .roles(new HashSet<>())
+                .build();
+        return List.of(build(), user);
     }
 }
