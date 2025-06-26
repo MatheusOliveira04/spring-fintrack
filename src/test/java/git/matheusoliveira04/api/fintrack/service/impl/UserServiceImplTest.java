@@ -53,7 +53,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("Should insert a user with success")
         void shouldInsertUserSuccess() {
-            var user = mockUser();
+            var user = UserFactory.build();
             var encodedPassword = "encodedPassword123";
 
             doReturn(encodedPassword).when(passwordEncoder).encode(any());
@@ -78,7 +78,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("Should pass correct parameters to encoder, findByEmail and save")
         void shouldPassCorrectParametersWhenInsertingUserWithSuccess() {
-            var user = mockUser();
+            var user = UserFactory.build();
             var originalUserPassword = user.getPassword();
             var encodedPassword = "encodedPassword123";
 
@@ -104,7 +104,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("should set password with password encoder before inserting user")
         void shouldSetPasswordWithEncoderBeforeInserting() {
-            var user = mockUser();
+            var user = UserFactory.build();
             var originalUserPassword = user.getPassword();
             var encodedPassword = "encodedPassword123";
 
@@ -147,7 +147,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("Should find by id a user with success")
         void shouldFindByIdWithSuccess() {
-            var user = mockUser();
+            var user = UserFactory.build();
 
             doReturn(Optional.of(user)).when(repository).findById(any());
 
@@ -167,7 +167,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("Should pass correct parameters to findById")
         void shouldPassCorrectParametersWhenFindingUserByIdWithSuccess() {
-            var user = mockUser();
+            var user = UserFactory.build();
 
             doReturn(Optional.of(user)).when(repository).findById(idCaptor.capture());
 
@@ -179,7 +179,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("should throws ObjectNotFoundException when not found user by id")
         void shouldThrowsObjectNotFoundExceptionWhenNotFoundUserById() {
-            var user = mockUser();
+            var user = UserFactory.build();
             var messageException = "User not found with id: " + user.getId();
 
             doReturn(Optional.empty()).when(repository).findById(idCaptor.capture());
