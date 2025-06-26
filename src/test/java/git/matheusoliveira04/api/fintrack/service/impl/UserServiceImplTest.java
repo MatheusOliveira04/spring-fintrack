@@ -1,8 +1,7 @@
 package git.matheusoliveira04.api.fintrack.service.impl;
 
-import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
-import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
+import git.matheusoliveira04.api.fintrack.factory.UserFactory;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;
@@ -19,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,7 +74,7 @@ class UserServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should pass correct parameters to encoder, findByEmail and save")
+        @DisplayName("Should pass correct parameters to encoder, findByEmail and save when inserting a user")
         void shouldPassCorrectParametersWhenInsertingUserWithSuccess() {
             var user = UserFactory.build();
             var originalUserPassword = user.getPassword();
@@ -102,7 +100,7 @@ class UserServiceImplTest {
         }
 
         @Test
-        @DisplayName("should set password with password encoder before inserting user")
+        @DisplayName("Should set password with password encoder before inserting user")
         void shouldSetPasswordWithEncoderBeforeInserting() {
             var user = UserFactory.build();
             var originalUserPassword = user.getPassword();
@@ -119,9 +117,9 @@ class UserServiceImplTest {
         }
 
         @Test
-        @DisplayName("Should throw exception if email already exists")
-        void shouldThrowExceptionWhenEmailExists() {
-            var user = mockUser();
+        @DisplayName("Should throw IntegrityViolationException if email already exists when inserting a user")
+        void shouldThrowIntegrityViolationExceptionWhenEmailExists() {
+            var user = UserFactory.build();
             var otherUser = User.builder()
                     .id(UUID.randomUUID())
                     .name("test1")
@@ -189,21 +187,133 @@ class UserServiceImplTest {
             assertEquals(messageException, exception.getMessage());
             verify(repository, times(1)).findById(any());
         }
-
     }
 
-    User mockUser() {
-        var user = User.builder()
-                .id(UUID.randomUUID())
-                .name("test1")
-                .email("test1@gmail.com")
-                .password("123")
-                .roles(new HashSet<>())
-                .build();
+    @Nested
+    class update {
 
-        var role = new Role(1L, RoleName.BASIC, Set.of(user));
-        user.addRole(role);
-        return user;
+        @Test
+        @DisplayName("Should update a user success when user exists")
+        void shouldUpdateUserWithSuccess() {
+            var user = UserFactory.build();
+            var encodedPasswordUpdated = "encodedPasswordUpdated";
+
+            var updatedUser = User.builder()
+                    .id(user.getId())
+                    .name("update")
+                    .email("update@gmail.com")
+                    .password("update")
+                    .roles(new HashSet<>())
+                    .build();
+
+            doReturn(Optional.of(updatedUser)).when(repository).findById(any());
+            doReturn(Optional.empty()).when(repository).findByEmail(any());
+            doReturn(encodedPasswordUpdated).when(passwordEncoder).encode(any());
+            doReturn(updatedUser).when(repository).save(any());
+
+            var userOutput = service.update(user);
+
+            assertNotNull(userOutput);
+            assertEquals(updatedUser, userOutput);
+            assertEquals(updatedUser.getId(), userOutput.getId());
+            assertEquals(updatedUser.getName(), userOutput.getName());
+            assertEquals(updatedUser.getEmail(), userOutput.getEmail());
+            assertEquals(updatedUser.getPassword(), userOutput.getPassword());
+            assertEquals(updatedUser.getRoles().size(), userOutput.getRoles().size());
+
+            verify(repository, times(1)).findById(any());
+            verify(repository, times(1)).findByEmail(any());
+            verify(passwordEncoder, times(1)).encode(any());
+            verify(repository, times(1)).save(any());
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to findById, findByEmail, encoder and save when updating a user")
+        void shouldPassCorrectParametersWhenUpdatingUserWithSuccess() {
+            var user = UserFactory.build();
+            var originalUserPassword = user.getPassword();
+            var encodedPasswordUpdated = "encodedPasswordUpdated";
+
+            doReturn(Optional.of(user)).when(repository).findById(idCaptor.capture());
+            doReturn(Optional.empty()).when(repository).findByEmail(stringCaptor.capture());
+            doReturn(encodedPasswordUpdated).when(passwordEncoder).encode(stringCaptor.capture());
+            doReturn(user).when(repository).save(userCaptor.capture());
+
+            service.update(user);
+
+            assertEquals(user.getId(), idCaptor.getValue());
+
+            var stringValuesCaptured = stringCaptor.getAllValues();
+            assertEquals(user.getEmail(), stringValuesCaptured.get(0));
+            assertEquals(originalUserPassword, stringValuesCaptured.get(1));
+
+            var userCaptured = userCaptor.getValue();
+            assertEquals(user, userCaptured);
+            assertEquals(user.getId(), userCaptured.getId());
+            assertEquals(user.getName(), userCaptured.getName());
+            assertEquals(user.getEmail(), userCaptured.getEmail());
+            assertEquals(user.getPassword(), userCaptured.getPassword());
+            assertEquals(user.getRoles().size(), userCaptured.getRoles().size());
+        }
+
+        @Test
+        @DisplayName("Should throw ObjectNotFoundException when trying to update a user that does not exist")
+        void shouldThrowObjectNotFoundExceptionWhenUpdatingNonExistentUser() {
+            var user = UserFactory.build();
+            var messageException = "User not found with id: " + user.getId();
+
+            doReturn(Optional.empty()).when(repository).findById(any());
+
+            var exception = assertThrows(ObjectNotFoundException.class, () -> service.update(user));
+            assertNotNull(exception);
+            assertEquals(messageException, exception.getMessage());
+            verify(repository, times(1)).findById(any());
+            verify(repository, times(0)).findByEmail(any());
+            verify(passwordEncoder, times(0)).encode(any());
+            verify(repository, times(0)).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw IntegrityViolationException if email already exists when updating a user")
+        void shouldThrowIntegrityViolationExceptionWhenEmailExistsWhenUpdatingUser() {
+            var user = UserFactory.build();
+            var updatedUser = User.builder()
+                    .id(user.getId())
+                    .name("update")
+                    .email("update@gmail.com")
+                    .password("update")
+                    .roles(new HashSet<>())
+                    .build();
+
+            doReturn(Optional.of(user)).when(repository).findById(any());
+            doReturn(Optional.of(updatedUser)).when(repository).findByEmail(any());
+
+            var exception = assertThrows(IntegrityViolationException.class, () -> service.update(user));
+            assertNotNull(exception);
+            assertEquals("Email already exists!", exception.getMessage());
+
+            verify(repository, times(1)).findById(any());
+            verify(repository, times(1)).findByEmail(any());
+            verify(passwordEncoder, times(0)).encode(any());
+            verify(repository, times(0)).save(any());
+        }
+
+        @Test
+        @DisplayName("Should set password with password encoder before updating user")
+        void shouldSetPasswordWithEncoderBeforeUpdating() {
+            var user = UserFactory.build();
+            var originalUserPassword = user.getPassword();
+            var encodedPassword = "encodedPassword123";
+
+            doReturn(Optional.of(user)).when(repository).findById(any());
+            doReturn(Optional.empty()).when(repository).findByEmail(any());
+            doReturn(encodedPassword).when(passwordEncoder).encode(any());
+            doReturn(user).when(repository).save(any());
+
+            var userOutput = service.update(user);
+
+            assertEquals(encodedPassword, userOutput.getPassword());
+            verify(passwordEncoder, times(1)).encode(originalUserPassword);
+        }
     }
-
 }
