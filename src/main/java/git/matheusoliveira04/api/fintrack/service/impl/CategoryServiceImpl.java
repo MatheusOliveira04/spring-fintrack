@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -37,8 +38,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Cacheable(value = "categories", key = "#userId + '-' + #page + '-' + #size")
     @Override
-    public Page<Category> findAllByUserId(UUID userId, int page, int size) {
-        Page<Category> allCategoriesByUserId = categoryRepository.findAllByUserId(userId, PageRequest.of(page, size));
+    public Page<Category> findAllByUserId(UUID userId, Pageable pageable) {
+        Page<Category> allCategoriesByUserId = categoryRepository.findAllByUserId(userId, pageable);
         if (allCategoriesByUserId.isEmpty()) {
             throw new ObjectNotFoundException("No user category found!");
         }

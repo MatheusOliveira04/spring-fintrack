@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -79,7 +80,7 @@ public class CategoryController implements CategoryControllerDocs {
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @RequestHeader(AUTHORIZATION) String token) {
-        Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUserIdByToken(token), page, size);
+        Page<Category> categoryPage = categoryService.findAllByUserId(tokenUtil.getUserIdByToken(token), PageRequest.of(page, size));
         List<CategoryResponse> categoryResponseList = categoryMapper.toCategoryResponse(categoryPage.toList());
         CategoryPageResponse categoryPageResponse = categoryPageMapper.toCategoryPageResponse(categoryResponseList, categoryPage);
         return ResponseEntity.ok(categoryPageResponse);
