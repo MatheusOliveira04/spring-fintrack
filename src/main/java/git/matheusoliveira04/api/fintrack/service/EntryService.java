@@ -7,6 +7,7 @@ import jakarta.validation.constraints.*;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,7 @@ public interface EntryService {
 
     Entry insert(@NotNull @Valid Entry entry);
 
-    Page<Entry> findAllByUserId(@NotNull UUID userId, @NotNull Pageable pageable);
+    Page<Entry> findAllByUserId(@NotNull UUID userId, @PageableDefault(size = 10, page = 0) @NotNull Pageable pageable);
 
     Entry findByIdAndUserId(@NotNull UUID entryId, @NotNull UUID userId);
 

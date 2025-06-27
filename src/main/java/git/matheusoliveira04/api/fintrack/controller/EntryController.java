@@ -84,11 +84,12 @@ public class EntryController implements EntryControllerDocs {
     @PreAuthorize("hasRole('BASIC')")
     @GetMapping("/user")
     public ResponseEntity<EntryPageResponse> findAllByUser(
-            @PageableDefault(size = 10, page = 0, sort = "description") Pageable pageable,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @RequestHeader(AUTHORIZATION) String token
             ) {
         UUID userId = tokenUtil.getUserIdByToken(token);
-        Page<Entry> allByUserId = entryService.findAllByUserId(userId, pageable);
+        Page<Entry> allByUserId = entryService.findAllByUserId(userId, PageRequest.of(page, size));
         List<EntryResponse> entryResponse = entryMapper.toEntryResponse(allByUserId.toList(), categoryMapper);
 
         return ResponseEntity.ok(entryPageMapper.toEntryPageResponse(entryResponse, allByUserId));

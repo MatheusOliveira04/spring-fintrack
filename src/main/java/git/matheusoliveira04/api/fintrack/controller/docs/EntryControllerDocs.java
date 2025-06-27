@@ -60,7 +60,8 @@ public interface EntryControllerDocs {
             }
     )
     ResponseEntity<EntryPageResponse> findAllByUser(
-            Pageable pageable,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive @Max(100) int size,
             @Parameter(hidden = true) @RequestHeader(AUTHORIZATION) String token
     );
 
