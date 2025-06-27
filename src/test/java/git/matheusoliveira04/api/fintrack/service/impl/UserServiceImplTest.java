@@ -330,9 +330,9 @@ class UserServiceImplTest {
         void shouldThrowIntegrityViolationExceptionWhenEmailExistsWhenUpdatingUser() {
             var user = UserFactory.build();
             var updatedUser = User.builder()
-                    .id(user.getId())
+                    .id(UUID.randomUUID())
                     .name("update")
-                    .email("update@gmail.com")
+                    .email(user.getEmail())
                     .password("update")
                     .roles(new HashSet<>())
                     .build();
@@ -366,6 +366,61 @@ class UserServiceImplTest {
 
             assertEquals(encodedPassword, userOutput.getPassword());
             verify(passwordEncoder, times(1)).encode(originalUserPassword);
+        }
+    }
+
+    @Nested
+    class delete {
+
+        @Test
+        @DisplayName("Should delete a user success when user exists")
+        void shouldDeleteUserWithSuccess() {
+            var user = UserFactory.build();
+
+            doReturn(Optional.of(user)).when(repository).findById(any());
+
+            service.delete(user.getId());
+
+            verify(repository).findById(user.getId());
+            verify(repository).delete(user);
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to findById and delete when deleting a user")
+        void shouldPassCorrectParametersWhenDeletingUserWithSuccess() {
+            var user = UserFactory.build();
+
+            doReturn(Optional.of(user)).when(repository).findById(idCaptor.capture());
+            doNothing().when(repository).delete(userCaptor.capture());
+
+            service.delete(user.getId());
+
+            verify(repository).findById(idCaptor.capture());
+            verify(repository).delete(userCaptor.capture());
+
+            assertEquals(user.getId(), idCaptor.getValue());
+
+            var userCaptured = userCaptor.getValue();
+            assertEquals(user, userCaptured);
+            assertEquals(user.getId(), userCaptured.getId());
+            assertEquals(user.getName(), userCaptured.getName());
+            assertEquals(user.getEmail(), userCaptured.getEmail());
+            assertEquals(user.getPassword(), userCaptured.getPassword());
+            assertEquals(user.getRoles().size(), userCaptured.getRoles().size());
+        }
+
+        @Test
+        @DisplayName("Should throw ObjectNotFoundException when trying to delete a user that does not exist")
+        void shouldThrowObjectNotFoundExceptionWhenDeletingNonExistentUser() {
+            var user = UserFactory.build();
+            var messageException = "User not found with id: " + user.getId();
+            doReturn(Optional.empty()).when(repository).findById(any());
+
+            var exception = assertThrows(ObjectNotFoundException.class, () -> service.delete(user.getId()));
+            assertNotNull(exception);
+            assertEquals(messageException, exception.getMessage());
+            verify(repository, times(1)).findById(user.getId());
+            verify(repository, times(0)).delete(any());
         }
     }
 }
