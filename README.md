@@ -10,11 +10,49 @@ Abaixo, uma prévia da documentação gerada automaticamente com Swagger OpenAPI
 
 ---
 
-## 📘 Diagrama de Classes (simplificado)
+## 📘 Diagrama de Classes
 
-O diagrama abaixo representa as principais entidades da aplicação e seus relacionamentos:
+```mermaid
+classDiagram
+    class User {
+        +UUID id
+        +String name
+        +String email
+        +String password
+        +Set<Role> roles
+        +List<Entry> entries
+        +List<Category> categories
+    }
 
-![Diagrama de Classes](docs/diagrama-classes.png)
+    class Role {
+        +Long id
+        +RoleName name
+        +Set<User> users
+    }
+
+    class Entry {
+        +UUID id
+        +String description
+        +BigDecimal value
+        +LocalDate date
+        +Boolean paid
+        +Category category
+        +User user
+    }
+
+    class Category {
+        +UUID id
+        +String description
+        +CategoryName type
+        +List<Entry> entries
+        +User user
+    }
+
+    User "1" -- "*" Entry
+    User "1" -- "*" Category
+    User "*" -- "*" Role
+    Entry "*" -- "1" Category
+```
 
 ---
 
