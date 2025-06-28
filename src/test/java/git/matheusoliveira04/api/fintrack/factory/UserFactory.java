@@ -3,6 +3,8 @@ package git.matheusoliveira04.api.fintrack.factory;
 import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
 import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +27,7 @@ public class UserFactory {
         return user;
     }
 
-    public static List<User> userListBuild() {
+    public static Page<User> userPageBuild() {
         var user = User.builder()
                 .id(UUID.randomUUID())
                 .name("test2")
@@ -33,6 +35,6 @@ public class UserFactory {
                 .password("123")
                 .roles(new HashSet<>())
                 .build();
-        return List.of(build(), user);
+        return new PageImpl<>(List.of(build(), user));
     }
 }
