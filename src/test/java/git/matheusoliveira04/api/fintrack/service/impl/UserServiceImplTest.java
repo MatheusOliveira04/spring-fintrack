@@ -202,7 +202,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("should find all users with success")
         void shouldFindAllUsersWithSuccess() {
-            var pageUser = new PageImpl<>(UserFactory.userListBuild());
+            var pageUser = UserFactory.userPageBuild();
             var page = PageRequest.of(0, 10);
 
             doReturn(pageUser).when(repository).findAll(any(Pageable.class));
@@ -217,7 +217,7 @@ class UserServiceImplTest {
         @Test
         @DisplayName("Should pass correct parameters to findAll method")
         void shouldPassCorrectParametersWhenFindingAllUsersWithSuccess() {
-            var pageUser = new PageImpl<>(UserFactory.userListBuild());
+            var pageUser = UserFactory.userPageBuild();
             var page = PageRequest.of(0, 10);
 
             doReturn(pageUser).when(repository).findAll(pageableCaptor.capture());
