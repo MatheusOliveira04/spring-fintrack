@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgres/data
+      - db_data:/var/lib/postgresql/data
     networks:
       - net-fintrack
 
@@ -29,6 +29,22 @@ services:
       - redis_data:/data
     networks:
       - net-fintrack
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: fintrack-api:1.0
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - net-fintrack
+    restart: unless-stopped
 
 volumes:
   db_data:
