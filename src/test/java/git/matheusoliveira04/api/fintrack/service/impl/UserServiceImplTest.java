@@ -1,7 +1,7 @@
 package git.matheusoliveira04.api.fintrack.service.impl;
 
 import git.matheusoliveira04.api.fintrack.entity.User;
-import git.matheusoliveira04.api.fintrack.factory.UserFactory;
+import git.matheusoliveira04.api.fintrack.factory.user.UserFactory;
 import git.matheusoliveira04.api.fintrack.repository.UserRepository;
 import git.matheusoliveira04.api.fintrack.service.exception.IntegrityViolationException;
 import git.matheusoliveira04.api.fintrack.service.exception.ObjectNotFoundException;

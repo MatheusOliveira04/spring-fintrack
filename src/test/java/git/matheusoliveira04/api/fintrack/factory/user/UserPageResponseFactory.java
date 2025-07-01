@@ -1,4 +1,4 @@
-package git.matheusoliveira04.api.fintrack.factory;
+package git.matheusoliveira04.api.fintrack.factory.user;
 
 import git.matheusoliveira04.api.fintrack.dto.response.UserPageResponse;
 
