@@ -1,10 +1,15 @@
 package git.matheusoliveira04.api.fintrack.controller;
 
+import git.matheusoliveira04.api.fintrack.dto.request.UserRequest;
 import git.matheusoliveira04.api.fintrack.dto.response.UserResponse;
+import git.matheusoliveira04.api.fintrack.entity.Role;
 import git.matheusoliveira04.api.fintrack.entity.User;
-import git.matheusoliveira04.api.fintrack.factory.UserFactory;
-import git.matheusoliveira04.api.fintrack.factory.UserPageResponseFactory;
-import git.matheusoliveira04.api.fintrack.factory.UserResponseFactory;
+import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
+import git.matheusoliveira04.api.fintrack.factory.role.RoleFactory;
+import git.matheusoliveira04.api.fintrack.factory.user.UserFactory;
+import git.matheusoliveira04.api.fintrack.factory.user.UserPageResponseFactory;
+import git.matheusoliveira04.api.fintrack.factory.user.UserRequestFactory;
+import git.matheusoliveira04.api.fintrack.factory.user.UserResponseFactory;
 import git.matheusoliveira04.api.fintrack.mapper.UserMapper;
 import git.matheusoliveira04.api.fintrack.mapper.UserPageMapper;
 import git.matheusoliveira04.api.fintrack.repository.RoleRepository;
@@ -22,9 +27,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,16 +55,143 @@ class UserControllerTest {
     UserController controller;
 
     @Captor
-    private ArgumentCaptor<List<User>> userListCaptor;
+    ArgumentCaptor<UUID> idCaptor;
 
     @Captor
-    private ArgumentCaptor<List<UserResponse>> userResponseListCaptor;
+    ArgumentCaptor<User> userCaptor;
 
     @Captor
-    private ArgumentCaptor<Pageable> pageableCaptor;
+    ArgumentCaptor<List<User>> userListCaptor;
 
     @Captor
-    private ArgumentCaptor<Page<User>> userPageCaptor;
+    ArgumentCaptor<Page<User>> userPageCaptor;
+
+    @Captor
+    ArgumentCaptor<UserRequest> userRequestCaptor;
+
+    @Captor
+    ArgumentCaptor<List<UserResponse>> userResponseListCaptor;
+
+    @Captor
+    ArgumentCaptor<Pageable> pageableCaptor;
+
+    @Captor
+    ArgumentCaptor<List<RoleName>> roleNameListCaptor;
+
+    @Captor
+    ArgumentCaptor<Set<Role>> roleSetCaptor;
+
+    @Nested
+    class insert {
+
+        @Test
+        @DisplayName("Should return HTTP status CREATED and the correct UserResponse body")
+        void shouldReturnHttpStatusCreated() {
+            var setRole = List.of(RoleFactory.build());
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+            var uriBuilder = UriComponentsBuilder.fromPath("/api/v1/user");
+            var userRequest = UserRequestFactory.build();
+
+            doReturn(setRole).when(roleRepository).findByNameIn(any());
+            doReturn(user).when(userMapper).toUser(any(), any());
+            doReturn(user).when(service).insert(any());
+            doReturn(userResponse).when(userMapper).toUserResponse(any());
+
+            var response = controller.insert(userRequest, uriBuilder);
+
+            assertNotNull(response);
+            assertEquals(userResponse, response.getBody());
+            assertEquals(HttpStatusCode.valueOf(201), response.getStatusCode());
+
+            verify(roleRepository, times(1)).findByNameIn(any());
+            verify(userMapper, times(1)).toUser(any(), any());
+            verify(service, times(1)).insert(any());
+            verify(userMapper, times(1)).toUserResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to dependency methods with success")
+        void shouldPassCorrectParametersToDependencyMethodsWithSuccess() {
+            var setRole = List.of(RoleFactory.build());
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+            var uriBuilder = UriComponentsBuilder.fromPath("/api/v1/user");
+            var userRequest = UserRequestFactory.build();
+
+            doReturn(setRole).when(roleRepository).findByNameIn(roleNameListCaptor.capture());
+            doReturn(user).when(userMapper).toUser(userRequestCaptor.capture(), roleSetCaptor.capture());
+            doReturn(user).when(service).insert(userCaptor.capture());
+            doReturn(userResponse).when(userMapper).toUserResponse(userCaptor.capture());
+
+            controller.insert(userRequest, uriBuilder);
+
+            var roleNameListCaptured = roleNameListCaptor.getValue();
+            assertEquals(1, roleNameListCaptured.size());
+            assertEquals(RoleName.BASIC.getDescription(), roleNameListCaptured.getFirst().getDescription());
+
+            assertEquals(userRequest, userRequestCaptor.getValue());
+            assertEquals(setRole.size(), roleSetCaptor.getValue().size());
+            assertEquals(setRole.getFirst(), roleSetCaptor.getValue().stream().toList().getFirst());
+
+            assertEquals(user, userCaptor.getAllValues().get(0));
+            assertEquals(user, userCaptor.getAllValues().get(1));
+
+            verify(roleRepository, times(1)).findByNameIn(roleNameListCaptured);
+            verify(userMapper, times(1)).toUser(any(), any());
+            verify(service, times(1)).insert(any());
+            verify(userMapper, times(1)).toUserResponse(any());
+        }
+    }
+
+    @Nested
+    class findById {
+
+        @Test
+        @DisplayName("Should return Http Status Ok and the correct UserResponse body")
+        void shouldReturnHttpStatusOk() {
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+
+            doReturn(user).when(service).findById(any());
+            doReturn(userResponse).when(userMapper).toUserResponse(any());
+
+            var response = controller.findById(user.getId().toString());
+
+            assertNotNull(response);
+            assertNotNull(response.getBody());
+            assertEquals(userResponse, response.getBody());
+            assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
+
+            verify(service, times(1)).findById(any());
+            verify(userMapper, times(1)).toUserResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to dependency methods with success")
+        void shouldPassCorrectParametersToDependencyMethodsWithSuccess() {
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+
+            doReturn(user).when(service).findById(idCaptor.capture());
+            doReturn(userResponse).when(userMapper).toUserResponse(userCaptor.capture());
+
+            controller.findById(user.getId().toString());
+
+            assertEquals(user.getId(), idCaptor.getValue());
+
+            assertEquals(user, userCaptor.getValue());
+            assertEquals(user.getId(), userCaptor.getValue().getId());
+            assertEquals(user.getName(), userCaptor.getValue().getName());
+            assertEquals(user.getEmail(), userCaptor.getValue().getEmail());
+            assertEquals(user.getPassword(), userCaptor.getValue().getPassword());
+
+            verify(service, times(1)).findById(idCaptor.getValue());
+            verify(userMapper, times(1)).toUserResponse(userCaptor.getValue());
+        }
+
+    }
+
 
     @Nested
     class findAll {
