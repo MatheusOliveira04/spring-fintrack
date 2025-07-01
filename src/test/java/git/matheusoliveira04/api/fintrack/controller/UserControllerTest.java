@@ -367,4 +367,36 @@ class UserControllerTest {
             verify(userMapper, times(1)).toUserResponse(userCaptor.getAllValues().getLast());
         }
     }
+
+    @Nested
+    class delete {
+
+        @Test
+        @DisplayName("Should return Http Status no content")
+        void shouldReturnHttpStatusNoContent() {
+            var id = UUID.randomUUID();
+
+            doNothing().when(service).delete(any());
+
+            var response = controller.delete(id.toString());
+
+            assertNotNull(response);
+            assertEquals(HttpStatusCode.valueOf(204), response.getStatusCode());
+
+            verify(service, times(1)).delete(id);
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to dependency methods with success")
+        void shouldPassCorrectParametersToDependencyMethodsWithSuccess() {
+            var id = UUID.randomUUID();
+
+            doNothing().when(service).delete(idCaptor.capture());
+
+            var response = controller.delete(id.toString());
+
+            assertEquals(id, idCaptor.getValue());
+            verify(service, times(1)).delete(eq(id));
+        }
+    }
 }
