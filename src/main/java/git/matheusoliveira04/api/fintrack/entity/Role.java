@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import git.matheusoliveira04.api.fintrack.entity.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+@Builder
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
