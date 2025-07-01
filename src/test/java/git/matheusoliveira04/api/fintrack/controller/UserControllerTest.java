@@ -315,4 +315,56 @@ class UserControllerTest {
             assertEquals(userPageResponse.getTotalPages(), response.getBody().getTotalPages());
         }
     }
+
+    @Nested
+    class update {
+
+        @Test
+        @DisplayName("Should return HTTP status OK and the correct UserResponse body")
+        void shouldReturnHttpStatusOK() {
+            var setRole = List.of(RoleFactory.build());
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+
+            var userRequest = UserRequestFactory.mockUpdated();
+
+            doReturn(setRole).when(roleRepository).findByNameIn(any());
+            doReturn(user).when(userMapper).toUser(any(), any());
+            doReturn(user).when(service).update(any());
+            doReturn(userResponse).when(userMapper).toUserResponse(any());
+
+            var response = controller.update(user.getId().toString(), userRequest);
+
+            assertNotNull(response);
+            assertEquals(userResponse, response.getBody());
+            assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
+
+            verify(roleRepository, times(1)).findByNameIn(any());
+            verify(userMapper, times(1)).toUser(any(), any());
+            verify(service, times(1)).update(any());
+            verify(userMapper, times(1)).toUserResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should pass correct parameters to dependency methods with success")
+        void shouldPassCorrectParametersToDependencyMethodsWithSuccess() {
+            var setRole = List.of(RoleFactory.build());
+            var user = UserFactory.build();
+            var userResponse = UserResponseFactory.build();
+
+            var userRequest = UserRequestFactory.mockUpdated();
+
+            doReturn(setRole).when(roleRepository).findByNameIn(roleNameListCaptor.capture());
+            doReturn(user).when(userMapper).toUser(userRequestCaptor.capture(), roleSetCaptor.capture());
+            doReturn(user).when(service).update(userCaptor.capture());
+            doReturn(userResponse).when(userMapper).toUserResponse(userCaptor.capture());
+
+            var response = controller.update(user.getId().toString(), userRequest);
+
+            verify(roleRepository, times(1)).findByNameIn(roleNameListCaptor.getValue());
+            verify(userMapper, times(1)).toUser(userRequestCaptor.getValue(), roleSetCaptor.getValue());
+            verify(service, times(1)).update(userCaptor.getAllValues().getFirst());
+            verify(userMapper, times(1)).toUserResponse(userCaptor.getAllValues().getLast());
+        }
+    }
 }
