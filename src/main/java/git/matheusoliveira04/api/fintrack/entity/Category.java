@@ -5,9 +5,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Builder
 @Getter
 @EqualsAndHashCode(of = "id")
 @NoArgsConstructor
@@ -30,8 +32,9 @@ public class Category implements Serializable {
     @Enumerated(EnumType.STRING)
     private CategoryName type;
 
+    @Builder.Default
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private List<Entry> entries;
+    private List<Entry> entries = new ArrayList<>();
 
     @Setter
     @ManyToOne

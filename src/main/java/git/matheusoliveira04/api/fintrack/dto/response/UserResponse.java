@@ -15,5 +15,6 @@ public class UserResponse {
     private String name;
     private String email;
     private String password;
+    @Builder.Default
     private Set<String> roleNames = new HashSet<>();
 }

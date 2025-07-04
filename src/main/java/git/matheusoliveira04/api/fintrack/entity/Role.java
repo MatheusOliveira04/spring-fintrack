@@ -28,6 +28,7 @@ public class Role implements Serializable {
     @Enumerated(EnumType.STRING)
     private RoleName name;
 
+    @Builder.Default
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
