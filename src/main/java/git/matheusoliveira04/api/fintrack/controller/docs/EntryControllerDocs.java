@@ -18,6 +18,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -136,7 +137,8 @@ public interface EntryControllerDocs {
                             responseCode = "200",
                             content = {
                                     @Content(mediaType = MediaTypes.APPLICATION_XLSX),
-                                    @Content(mediaType = MediaTypes.TEXT_CSV)
+                                    @Content(mediaType = MediaTypes.TEXT_CSV),
+                                    @Content(mediaType = MediaType.APPLICATION_PDF_VALUE)
                             }
                     ),
                     @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
