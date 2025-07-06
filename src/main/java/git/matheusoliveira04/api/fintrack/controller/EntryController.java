@@ -12,6 +12,7 @@ import git.matheusoliveira04.api.fintrack.mapper.EntryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.EntryPageMapper;
 import git.matheusoliveira04.api.fintrack.service.CategoryService;
 import git.matheusoliveira04.api.fintrack.service.EntryService;
+import git.matheusoliveira04.api.fintrack.util.ExportFileUtil;
 import git.matheusoliveira04.api.fintrack.util.TokenUtil;
 import git.matheusoliveira04.api.fintrack.validation.annotation.ValidUUID;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,8 +24,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,12 +32,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static git.matheusoliveira04.api.fintrack.file.exporter.MediaTypes.APPLICATION_XLSX;
 import static org.springframework.http.HttpHeaders.*;
 
 @Validated
@@ -158,9 +155,8 @@ public class EntryController implements EntryControllerDocs {
         String acceptHeader = request.getHeader(ACCEPT);
         Resource file = entryService.exportData(userId, PageRequest.of(page, size), acceptHeader);
 
-        var contentType = Optional.ofNullable(acceptHeader).orElse("application/octet-stream");
-        var fileExtension = APPLICATION_XLSX.equalsIgnoreCase(acceptHeader) ? ".xlsx" : ".csv";
-        var fileName = "entries_exported_" + LocalDateTime.now() + fileExtension;
+        var contentType = Optional.ofNullable(acceptHeader).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        var fileName = ExportFileUtil.resolveFileName("entries_exported_", acceptHeader);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
