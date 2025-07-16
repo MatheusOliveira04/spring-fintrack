@@ -7,6 +7,7 @@ import git.matheusoliveira04.api.fintrack.dto.response.EntryResponse;
 import git.matheusoliveira04.api.fintrack.entity.Category;
 import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.entity.User;
+import git.matheusoliveira04.api.fintrack.file.exporter.MediaTypes;
 import git.matheusoliveira04.api.fintrack.mapper.CategoryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.EntryMapper;
 import git.matheusoliveira04.api.fintrack.mapper.EntryPageMapper;
@@ -143,7 +144,11 @@ public class EntryController implements EntryControllerDocs {
 
     @Override
     @PreAuthorize("hasRole('BASIC')")
-    @GetMapping("/export")
+    @GetMapping(value = "/export", produces = {
+            MediaType.APPLICATION_PDF_VALUE,
+            MediaTypes.APPLICATION_XLSX,
+            MediaTypes.TEXT_CSV
+    })
     public ResponseEntity<Resource> exportFileData(
             @RequestParam(defaultValue = "0") @PositiveOrZero int page,
             @RequestParam(defaultValue = "10") @Positive @Max(value = 100) int size,
