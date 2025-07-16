@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -50,6 +51,13 @@ public class ControllerExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage())));
 
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<StandardError> getFileNotFoundException(FileNotFoundException exception, HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), request.getRequestURI(), Collections.singletonList(exception.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
