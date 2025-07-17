@@ -2,7 +2,7 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
@@ -16,6 +16,5 @@ ARG CACHE_HOST
 
 ENV JWT_TOKEN_EXPIRATION=86400000
 ENV JWT_REFRESH_TOKEN_EXPIRATION=172800000
-
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
