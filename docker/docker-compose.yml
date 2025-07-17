@@ -31,10 +31,7 @@ services:
       - net-fintrack
 
   api:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    image: fintrack-api:1.0
+    image: mathasd/fintrack-api:2.0
     env_file:
       - .env
     ports:
