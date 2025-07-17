@@ -4,6 +4,8 @@ import git.matheusoliveira04.api.fintrack.dto.request.EntryReportHeaderRequest;
 import git.matheusoliveira04.api.fintrack.dto.request.EntryReportItemRequest;
 import git.matheusoliveira04.api.fintrack.entity.Entry;
 import git.matheusoliveira04.api.fintrack.file.exporter.contract.FileExporter;
+import git.matheusoliveira04.api.fintrack.file.mapper.EntryReportHeaderMapper;
+import git.matheusoliveira04.api.fintrack.file.mapper.EntryReportItemMapper;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.core.io.ByteArrayResource;
@@ -13,38 +15,34 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class EntryPdfExporter implements FileExporter<Entry> {
 
     private static final String TEMPLATE_PATH = "/templates/EntryReport.jrxml";
 
+    private EntryReportHeaderMapper entryReportHeaderMapper;
+    private EntryReportItemMapper entryReportItemMapper;
+
+    public EntryPdfExporter(EntryReportHeaderMapper entryReportHeaderMapper, EntryReportItemMapper entryReportItemMapper) {
+        this.entryReportHeaderMapper = entryReportHeaderMapper;
+        this.entryReportItemMapper = entryReportItemMapper;
+    }
+
     @Override
     public Resource exportFile(List<Entry> list) throws Exception {
         JasperReport report = compileReport();
 
-        List<EntryReportHeaderRequest> reportHeader = list.stream()
-                .map(entry -> new EntryReportHeaderRequest(entry.getUser().getName(), entry.getUser().getEmail()))
-                .toList();
-
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(reportHeader);
-
-        List<EntryReportItemRequest> reportItem = list.stream()
-                .map(entry -> new EntryReportItemRequest(entry.getDescription(),
-                        entry.getValue().doubleValue(),
-                        entry.getPaid(),
-                        entry.getCategory().getType().getDescription()))
-                .toList();
-
-        JRBeanCollectionDataSource tableDataSource = new JRBeanCollectionDataSource(reportItem);
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("TABLE_DATA_SOURCE", tableDataSource);
+        JRBeanCollectionDataSource dataSource = createHeaderDataSource(list);
+        Map<String, Object> parameters = setParameters(list);
 
         JasperPrint print = JasperFillManager.fillReport(report, parameters, dataSource);
 
-        byte[] pdfBytes = exportToPdf(print);
+        byte[] pdfBytes = generatePdfBytes(print);
         return new ByteArrayResource(pdfBytes);
     }
 
@@ -54,7 +52,24 @@ public class EntryPdfExporter implements FileExporter<Entry> {
         return JasperCompileManager.compileReport(input);
     }
 
-    private byte[] exportToPdf(JasperPrint jasperPrint) {
+    private JRBeanCollectionDataSource createHeaderDataSource(List<Entry> list) {
+        List<EntryReportHeaderRequest> reportHeader = entryReportHeaderMapper.toReportHeaders(list);
+        return new JRBeanCollectionDataSource(reportHeader);
+    }
+
+    private Map<String, Object> setParameters(List<Entry> entries) {
+        JRBeanCollectionDataSource tableDataSource = getJrBeanCollectionTableDataSource(entries);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("TABLE_DATA_SOURCE", tableDataSource);
+        return parameters;
+    }
+
+    private JRBeanCollectionDataSource getJrBeanCollectionTableDataSource(List<Entry> list) {
+        List<EntryReportItemRequest> reportItem = entryReportItemMapper.toReportItems(list);
+        return new JRBeanCollectionDataSource(reportItem);
+    }
+
+    private byte[] generatePdfBytes(JasperPrint jasperPrint) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             JasperExportManager.exportReportToPdfStream(jasperPrint, outputStream);
             return outputStream.toByteArray();
