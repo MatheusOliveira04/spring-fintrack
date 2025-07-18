@@ -63,6 +63,7 @@ classDiagram
 - Exportação e importação de lançamentos:
   - 📤 CSV (`.csv`)
   - 📤 XLSX (`.xlsx`)
+  - 📤 PDF (`.pdf`)
 - Cache com **Redis** para otimização de performance
 - Integração com **PostgreSQL 16** e versionamento de banco com **Flyway**
 - Documentação interativa da API com **Swagger OpenAPI**
@@ -87,10 +88,10 @@ classDiagram
 | Documentação          | Swagger OpenAPI                                           |
 | Mapeamento de Objetos | MapStruct                                                 |
 | Testes                | JUnit, Mockito                                            |
-| Importação/Exportação| Apache POI (XLSX), Commons CSV (CSV)                      |
+| Importação/Exportação| Apache POI (XLSX), Commons CSV (CSV) e JasperReports (PDF) |
 | Design Patterns       | Factory, Strategy                                         |
 | Boas práticas         | SOLID, Clean Code                                         |
-| Containerização       | Docker, Docker Compose                                   |
+| Containerização       | Docker, Docker Compose                                    |
 
 ---
 
@@ -113,8 +114,8 @@ A cobertura de testes é garantida com o uso de:
 
 ## 🔄 Importação/Exportação
 
-- Arquivos CSV e XLSX podem ser **importados** para cadastrar múltiplos lançamentos de uma vez.
-- É possível **exportar** todos os lançamentos financeiros do usuário em ambos os formatos.
+- Arquivos **CSV**, **XLSX** e **PDF** podem ser **exportados** para salvar os lançamentos financeiros do usuário.
+- Arquivos CSV e XLSX também podem ser **importados** para cadastrar múltiplos lançamentos de uma vez.
 
 ---
 
