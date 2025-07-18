@@ -117,6 +117,15 @@ A cobertura de testes é garantida com o uso de:
 - Arquivos **CSV**, **XLSX** e **PDF** podem ser **exportados** para salvar os lançamentos financeiros do usuário.
 - Arquivos CSV e XLSX também podem ser **importados** para cadastrar múltiplos lançamentos de uma vez.
 
+### PDF
+![PDF](docs/entry-pdf-export.png) 
+
+### CSV
+![PDF](docs/entry-csv-export.png)
+
+### XLSX
+![PDF](docs/entry-xlsx-export.png)
+
 ---
 
 ## 📦 Execução com Docker
