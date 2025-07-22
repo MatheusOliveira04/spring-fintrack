@@ -69,7 +69,7 @@ classDiagram
 - Documentação interativa da API com **Swagger OpenAPI**
 - Testes automatizados com **JUnit** e **Mockito**
 - Separação de responsabilidades utilizando os princípios **SOLID** e boas práticas de **Clean Code**
-- Uso de **Design Patterns** como Factory e Strategy
+- Uso de **Design Patterns** como Factory, Strategy e Builder
 - Containerização com **Docker** e **Docker Compose**
 - Conversão de objetos com **MapStruct**
 
@@ -89,7 +89,7 @@ classDiagram
 | Mapeamento de Objetos | MapStruct                                                 |
 | Testes                | JUnit, Mockito                                            |
 | Importação/Exportação| Apache POI (XLSX), Commons CSV (CSV) e JasperReports (PDF) |
-| Design Patterns       | Factory, Strategy                                         |
+| Design Patterns       | Factory, Strategy, Builder                                |
 | Boas práticas         | SOLID, Clean Code                                         |
 | Containerização       | Docker, Docker Compose                                    |
 
