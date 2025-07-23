@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-image-in-docker-hub:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout private tools
         uses: actions/checkout@v4
