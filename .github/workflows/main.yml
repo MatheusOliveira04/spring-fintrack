@@ -1,0 +1,14 @@
+name: Dockerhub-image-upload
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-image-in-docker-hub:
+    runs-on: ubuntu-lastest
+    steps:
+      - run: echo "obter o código"
+      - run: echo "Executar o Docker build"
+      - run: echo "Enviar a imagem Docker para o Docker Hub"
