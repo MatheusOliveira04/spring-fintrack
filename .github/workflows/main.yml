@@ -21,7 +21,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          file: src/Dockerfile
+          file: docker/Dockerfile
           push: true
           tags: |
             mathasd/fintrack-api:v${{ github.run_number }}
