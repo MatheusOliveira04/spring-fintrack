@@ -69,7 +69,7 @@ classDiagram
 - Documentação interativa da API com **Swagger OpenAPI**
 - Testes automatizados com **JUnit** e **Mockito**
 - Separação de responsabilidades utilizando os princípios **SOLID** e boas práticas de **Clean Code**
-- Uso de **Design Patterns** como Factory e Strategy
+- Uso de **Design Patterns** como Factory, Strategy e Builder
 - Containerização com **Docker** e **Docker Compose**
 - Conversão de objetos com **MapStruct**
 
@@ -89,7 +89,7 @@ classDiagram
 | Mapeamento de Objetos | MapStruct                                                 |
 | Testes                | JUnit, Mockito                                            |
 | Importação/Exportação| Apache POI (XLSX), Commons CSV (CSV) e JasperReports (PDF) |
-| Design Patterns       | Factory, Strategy                                         |
+| Design Patterns       | Factory, Strategy, Builder                                |
 | Boas práticas         | SOLID, Clean Code                                         |
 | Containerização       | Docker, Docker Compose                                    |
 
@@ -116,6 +116,15 @@ A cobertura de testes é garantida com o uso de:
 
 - Arquivos **CSV**, **XLSX** e **PDF** podem ser **exportados** para salvar os lançamentos financeiros do usuário.
 - Arquivos CSV e XLSX também podem ser **importados** para cadastrar múltiplos lançamentos de uma vez.
+
+### PDF
+![PDF](docs/entry-pdf-export.png) 
+
+### CSV
+![PDF](docs/entry-csv-export.png)
+
+### XLSX
+![PDF](docs/entry-xlsx-export.png)
 
 ---
 
