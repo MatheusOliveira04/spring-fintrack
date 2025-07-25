@@ -1,5 +1,7 @@
 # 📊 API de Gerenciamento de Finanças Pessoais - fintrack
 
+[![Dockerhub-image-upload](https://github.com/MatheusOliveira04/spring-fintrack/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/MatheusOliveira04/spring-fintrack/actions/workflows/main.yml)
+
 Este projeto é uma **API RESTful** desenvolvida com **Java 21** e **Spring Boot**, voltada ao controle de **despesas e receitas pessoais** de usuários. Cada usuário possui sua própria conta, onde pode registrar, consultar, atualizar e excluir seus lançamentos financeiros. Além disso, é possível importar e exportar dados em **formato CSV e XLSX**.
 
 ## 🔎 Interface Swagger UI
